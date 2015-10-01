@@ -1,0 +1,47 @@
+#!/bin/bash
+# chkconfig: 2345 20 80
+# description: Description comes here....
+
+# Source function library.
+. /etc/init.d/functions
+
+start() {
+    # code to start app comes here 
+    # example: daemon program_name &
+    daemon --user ec2-user /usr/local/bin/uwsgi /home/ec2-user/dazar/django_backend/uwsgi.ini &
+
+}
+
+stop() {
+    # code to stop app comes here 
+    # example: killproc program_name
+    killproc uwsgi
+}
+
+restart() {
+    stop
+    start
+}
+
+case "$1" in 
+    start)
+       start
+       ;;
+    stop)
+       stop
+       ;;
+    restart)
+       stop
+       start
+       ;;
+    status)
+       # code to check status of app comes here 
+       # example: status program_name
+       status /usr/local/bin/uwsgi
+       RETVAL=$?
+       ;;
+    *)
+       echo "Usage: $0 {start|stop|status|restart}"
+esac
+
+exit 0 
