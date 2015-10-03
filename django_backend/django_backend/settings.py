@@ -116,6 +116,9 @@ TEMPLATE_DIRS = (
 INSTALLED_APPS = (
     'dazar',
 )
+INSTALLED_APPS += (
+    'djgeojson',
+)
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 
