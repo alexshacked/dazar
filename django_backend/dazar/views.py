@@ -49,7 +49,7 @@ def addAddress(request):
     initial_addr, formatted_addr = extractAddress(request)
     geocode = geocodeFromGoogle(formatted_addr)
 
-    pt = Point(type = 'Point', coordinates = [float(geocode['lat']), float(geocode['lng'])] )
+    pt = Point(type = 'Point', coordinates = [float(geocode['lng']), float(geocode['lat'])] )
 
     doc = Locations.objects.create(address=initial_addr, point=pt)
     doc.save()
@@ -62,7 +62,7 @@ def neighbours(request):
     maxDistance = int(request.GET['radius'])
     lat = float(geocode['lat'])
     lng = float(geocode['lng'])
-    query = { 'point': { '$near': {'$geometry': {'type':"Point", 'coordinates': [lat, lng]}, '$maxDistance': maxDistance } } }
+    query = { 'point': { '$near': {'$geometry': {'type':"Point", 'coordinates': [lng, lat]}, '$maxDistance': maxDistance } } }
 
     queryset = Locations.objects.raw_query(query)
     try:
@@ -75,7 +75,7 @@ def neighbours(request):
     for q in queryset:
         store = {}
         store['address'] = q.address
-        store['coordinates'] = q.point.coordinates
+        store['coordinates'] = {'latitude':q.point.coordinates[1], 'longitude':q.point.coordinates[0]}
         res['result'].append(store)
 
     return HttpResponse(json.dumps(res))
