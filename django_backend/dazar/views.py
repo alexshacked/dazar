@@ -8,26 +8,6 @@ import re
 import urllib2
 import json
 
-def getComments(request):
-    ret = Tweets.objects.all()
-    s = ''
-    for r in ret:
-        s += r.user
-        s += ' '
-    return HttpResponse(s)
-
-def putComment(request):
-    user = request.GET['user']
-    comment = request.GET['comment']
-    try:
-        tweet = Tweets.objects.get(user=user)
-    except Tweets.DoesNotExist:
-        tweet = Tweets.objects.create(user=user, comments=[comment])
-    else:
-        tweet.comments.append(comment)
-    tweet.save()
-    return  HttpResponse(user + ' ' + comment)
-
 def geocodeFromGoogle(civil_addr):
     start = 'https://maps.googleapis.com/maps/api/geocode/json?address='
     mid = civil_addr
@@ -45,6 +25,7 @@ def extractAddress(request):
     formatted_addr = re.sub(r'[ ]+', '+', initial_addr)
     return initial_addr, formatted_addr
 
+# API
 def addAddress(request):
     initial_addr, formatted_addr = extractAddress(request)
     geocode = geocodeFromGoogle(formatted_addr)
@@ -55,6 +36,7 @@ def addAddress(request):
     doc.save()
     return HttpResponse('ok')
 
+# API
 def neighbours(request):
     initial_addr, formatted_addr = extractAddress(request)
     geocode = geocodeFromGoogle(formatted_addr)

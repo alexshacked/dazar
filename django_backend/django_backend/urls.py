@@ -1,6 +1,4 @@
 from django.conf.urls import patterns, include, url
-from dazar.views import getComments
-from dazar.views import putComment
 from dazar.views import addAddress
 from dazar.views import neighbours
 
@@ -9,8 +7,6 @@ from dazar.views import neighbours
 # admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^get$', getComments),
-    url(r'^put$', putComment),
     url(r'^addAddress$', addAddress),
     url(r'^neighbours$', neighbours),
 )
