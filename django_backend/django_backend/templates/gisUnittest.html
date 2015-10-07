@@ -98,7 +98,7 @@
             sendMsg(uri);
         }
 
-        asyncDisplay('**** Start getting neighbours for each addresses of street: ' + street + ' in range of ' + range + ' meters\n ****');
+        asyncDisplay('**** Start getting neighbours for each addresses of street: ' + street + ' in range of ' + range + ' meters ****\n');
         startUri = baseUri + '/neighbours?radius=' + range + '&addr=';
         for (var i = 1; i < 10; i++) { // 10 addresses on the street
             var houseAddr = i + street;
