@@ -18,12 +18,12 @@
         <input type="text" name="txtUri" size="30" maxlength="30" />
         Radius:
         <input type="text" name="txtRadius" size="5" maxlength="5" />
-        # Addresses:
-        <input type="text" name="txtAddrs" size="5" maxlength="5" />
         Street:
         <input type="text" name="txtStreet" size="40" maxlength="40" />
         Start:
         <input type="text" name="txtStart" size="5" maxlength="5" />
+        # Addresses:
+        <input type="text" name="txtAddrs" size="5" maxlength="5" />
     </p>
     <p>
         <input type="button" name="buttonCrawl" style="color: black; background-color: GreenYellow" value="START" />
@@ -99,7 +99,7 @@
         asyncDisplay('**** Start filling into the database the addresses of street: ' + street + ' ****\n');
         var startUri = baseUri + '/addAddress?addr=';
         var start = document.form1.txtStart.value;
-        for (var start = document.form1.txtStart.value; i < start + numAddresses; i++) { // 10 addresses on the street
+        for (var i = start; i < (start + numAddresses); i++) { // 10 addresses on the street
             var houseAddr = i + ' ' + street;
             var uri = startUri + houseAddr;
             sendMsg(uri);
@@ -107,7 +107,7 @@
 
         asyncDisplay('**** Start getting neighbours for each addresses of street: ' + street + ' in range of ' + range + ' meters ****\n');
         startUri = baseUri + '/neighbours?radius=' + range + '&addr=';
-        for (var i = start; i < start + numAddresses; i++) { // 10 addresses on the street
+        for (var i = start; i < (start + numAddresses); i++) { // 10 addresses on the street
             var houseAddr = i + ' ' + street;
             var uri = startUri + houseAddr;
             sendMsg(uri);
