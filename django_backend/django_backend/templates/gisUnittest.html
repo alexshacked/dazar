@@ -97,7 +97,7 @@
         asyncDisplay('**** Start filling into the database the addresses of street: ' + street + ' ****\n');
         var startUri = baseUri + '/addAddress?addr=';
         for (var i = 1; i < numAddresses; i++) { // 10 addresses on the street
-            var houseAddr = i + street;
+            var houseAddr = i + ' ' + street;
             var uri = startUri + houseAddr;
             sendMsg(uri);
         }
