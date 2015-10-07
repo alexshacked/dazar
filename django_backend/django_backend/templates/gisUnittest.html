@@ -20,6 +20,8 @@
         <input type="text" name="txtRadius" size="10" maxlength="10" />
         # Addresses:
         <input type="text" name="txtAddrs" size="10" maxlength="10" />
+        Street:
+        <input type="text" name="txtStreet" size="50" maxlength="50" />
     </p>
     <p>
         <input type="button" name="buttonCrawl" style="color: black; background-color: GreenYellow" value="START" />
@@ -103,7 +105,7 @@
         asyncDisplay('**** Start getting neighbours for each addresses of street: ' + street + ' in range of ' + range + ' meters ****\n');
         startUri = baseUri + '/neighbours?radius=' + range + '&addr=';
         for (var i = 1; i < numAddresses; i++) { // 10 addresses on the street
-            var houseAddr = i + street;
+            var houseAddr = i + ' ' + street;
             var uri = startUri + houseAddr;
             sendMsg(uri);
         }
@@ -115,7 +117,7 @@
         cleanDB(srvLocation);
         cleanDisplay();
 
-        var street = ' ibn gvirol, tel aviv, israel';
+        var street =   document.form1.txtStreet.value; //' ibn gvirol, tel aviv, israel';
         radius = document.form1.txtRadius.value;
         numAddresses =  document.form1.txtAddrs.value;
         testOneStreet(srvLocation, street, radius, numAddresses);
@@ -126,6 +128,7 @@
         uri.value = 'dazar.io'
         document.form1.txtRadius.value = 25;
         document.form1.txtAddrs.value = 10;
+        document.form1.txtStreet.value = 'ibn gvirol, tel aviv, israel';
     }
 
     buttonCrawl.addEventListener("click", buttonStartTest);
