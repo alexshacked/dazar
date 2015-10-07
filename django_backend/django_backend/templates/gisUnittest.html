@@ -53,7 +53,7 @@
         var obj = JSON.parse(jsStr);
         var locs = obj.result;
         for  (var idx in locs) {
-            var one = 'Address: ' + locs[idx].address + ' *** Coordinates: longitude - ' + locs[idx].coordinates.longitude + ' latitude - ' + locs[idx].coordinates.latitude;
+            var one = 'Address: ' + locs[idx].address + ' *** Coordinates: longitude  ' + locs[idx].coordinates.longitude + '    latitude  ' + locs[idx].coordinates.latitude;
             res += one;
             res += '\n';
         }
