@@ -1,8 +1,8 @@
 from django.http import HttpResponse
-from models import Tweets
+from django.template.loader import get_template
+from django.template import Context
 from models import Locations
 from models import Point
-# from geojson import Point
 
 import re
 import urllib2
@@ -36,6 +36,17 @@ def addAddress(request):
     doc.save()
     return HttpResponse('ok')
 
+def parseMongoResponse(queryset):
+    res = {}
+    res['result'] = []
+    for q in queryset:
+        store = {}
+        store['address'] = q.address
+        store['coordinates'] = {'latitude':q.point.coordinates[1], 'longitude':q.point.coordinates[0]}
+        res['result'].append(store)
+
+    return json.dumps(res)
+
 # API
 def neighbours(request):
     initial_addr, formatted_addr = extractAddress(request)
@@ -52,12 +63,28 @@ def neighbours(request):
     except:
         return HttpResponse('none')
 
-    res = {}
-    res['result'] = []
-    for q in queryset:
-        store = {}
-        store['address'] = q.address
-        store['coordinates'] = {'latitude':q.point.coordinates[1], 'longitude':q.point.coordinates[0]}
-        res['result'].append(store)
+    res = parseMongoResponse(queryset);
+    return HttpResponse(res)
 
-    return HttpResponse(json.dumps(res))
+# API
+def all(request):
+    queryset = Locations.objects.all()
+    res = parseMongoResponse(queryset);
+    return HttpResponse(res)
+
+# API
+def truncate(request):
+    Locations.objects.all().delete()
+    return HttpResponse('ok')
+
+# API
+def gisUnittest(request):
+    t = get_template('gisUnittest.html')
+    html = t.render( Context({}) )
+    return HttpResponse(html)
+
+
+
+
+
+

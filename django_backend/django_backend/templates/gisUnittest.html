@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Dazar GIS Unittest</title>
+</head>
+
+<body bgcolor="gray" onload="onInit()">
+<form action="" name="form1"></p>
+    <p style="font-size:160%"><strong>Dazar - Unittesting basic GIS capabilities. APIs:</strong></p>
+    <p><span style="font-size:130%">addAddress</span> - http://dazar.io/addAddres?addr=12 hasadot, ramat hasharon, israel</p>
+    <p><span style="font-size:130%">neighbours</span> - http://dazar.io/neighbours?radius=300&addr=12 hasadot, ramat hasharon, israel</p>
+    <p><span style="font-size:130%">all</span>        - http://dazar.io/all</p>
+    <p><span style="font-size:130%">truncate</span>   - http://dazar.io/truncate</p>
+    <p>
+        URI:
+        <input type="text" name="txtUri" size="30" maxlength="30" />
+        Radius:
+        <input type="text" name="txtRadius" size="10" maxlength="10" />
+    </p>
+    <p>
+        <input type="button" name="buttonCrawl" style="color: black; background-color: GreenYellow" value="START" />
+    </p>
+    <p>
+        <textarea rows="25" cols="120"  style="color: black; background-color: lightyellow; font-size:95%" name="results"></textarea>
+    </p>
+</form>
+
+<script>
+    var buttonCrawl = document.form1.buttonCrawl;
+    var numberOfClicks = 0;
+
+    function doSend(srvLocation) {
+        xmlHttp = new XMLHttpRequest();
+        var Url = "http://" + srvLocation
+        xmlHttp.open( "GET", Url, false );
+        xmlHttp.setRequestHeader("withCredentials", "false");
+        xmlHttp.send( null );
+        return xmlHttp.responseText;
+    }
+
+    function parseResponse(jsStr) {
+        if (jsStr === 'ok') {
+            return ''
+        }
+
+        var res = '';
+        var obj = JSON.parse(jsStr);
+        var locs = obj.result;
+        for  (var idx in locs) {
+            var one = 'Address: ' + locs[idx].address + ' *** Coordinates: longitude - ' + locs[idx].coordinates.longitude + ' latitude - ' + locs[idx].coordinates.latitude;
+            res += one;
+            res += '\n';
+        }
+        return res;
+    }
+
+    function scrollDown() {
+        var resultsArea = document.form1.results;
+        if(resultsArea.selectionStart == resultsArea.selectionEnd) {
+                resultsArea.scrollTop = resultsArea.scrollHeight;
+        }
+    }
+
+    function sendMsg(uri) {
+        var resultsArea = document.form1.results;
+
+        setTimeout(function() {
+            resultsArea.value += 'Doing:  ' + uri + '\n';
+            resultsArea.value += parseResponse(doSend(uri));
+            scrollDown();
+        }, 0);
+    }
+
+    function asyncDisplay(msg) {
+        var resultsArea = document.form1.results;
+        setTimeout(function() {
+            resultsArea.value += msg;
+        }, 0);
+    }
+
+    function cleanDisplay() {
+        document.form1.results.value = '';
+    }
+
+    function cleanDB(uri) {
+        var target = uri + '/truncate'
+        doSend(target)
+    }
+
+    function testOneStreet(baseUri, street, range) {
+        asyncDisplay('Start filling into the database the addresses of street: ' + street + '\n');
+        var startUri = baseUri + '/addAddress?addr=';
+        for (var i = 1; i < 10; i++) { // 10 addresses on the street
+            var houseAddr = i + street;
+            var uri = startUri + houseAddr;
+            sendMsg(uri);
+        }
+
+        asyncDisplay('Start getting neighbours for each addresses of street: ' + street + ' in range of ' + range + ' meters\n');
+        startUri = baseUri + '/neighbours?radius=' + range + '&addr=';
+        for (var i = 1; i < 10; i++) { // 10 addresses on the street
+            var houseAddr = i + street;
+            var uri = startUri + houseAddr;
+            sendMsg(uri);
+        }
+    }
+
+    function buttonStartTest() {
+        var srvLocation = document.form1.txtUri.value;
+
+        cleanDB(srvLocation);
+        cleanDisplay();
+
+        var street = ' ibn gvirol, tel aviv, israel';
+        radius = document.form1.txtRadius.value
+        testOneStreet(srvLocation, street, radius);
+
+        //sendMsg(srvLocation + '/addAddress?addr=12 hasadot, ramat hasharon, israel');
+        //sendMsg(srvLocation + '/addAddress?addr=5 hasadot, ramat hasharon, israel');
+        //sendMsg(srvLocation + '/addAddress?addr=16 haganim, ramat hasharon, israel');
+        //sendMsg(srvLocation + '/neighbours?radius=500&addr=7 hasadot, ramat hasharon, israel');
+    }
+
+    function onInit() {
+        var uri = document.form1.txtUri;
+        uri.value = 'localhost'
+        document.form1.txtRadius.value = 25;
+    }
+
+    buttonCrawl.addEventListener("click", buttonStartTest);
+</script>
+
+</body>
+
+</html>
