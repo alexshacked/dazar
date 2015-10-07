@@ -90,7 +90,7 @@
     }
 
     function testOneStreet(baseUri, street, range) {
-        asyncDisplay('Start filling into the database the addresses of street: ' + street + '\n');
+        asyncDisplay('**** Start filling into the database the addresses of street: ' + street + ' ****\n');
         var startUri = baseUri + '/addAddress?addr=';
         for (var i = 1; i < 10; i++) { // 10 addresses on the street
             var houseAddr = i + street;
@@ -98,7 +98,7 @@
             sendMsg(uri);
         }
 
-        asyncDisplay('Start getting neighbours for each addresses of street: ' + street + ' in range of ' + range + ' meters\n');
+        asyncDisplay('**** Start getting neighbours for each addresses of street: ' + street + ' in range of ' + range + ' meters\n ****');
         startUri = baseUri + '/neighbours?radius=' + range + '&addr=';
         for (var i = 1; i < 10; i++) { // 10 addresses on the street
             var houseAddr = i + street;
@@ -116,11 +116,6 @@
         var street = ' ibn gvirol, tel aviv, israel';
         radius = document.form1.txtRadius.value
         testOneStreet(srvLocation, street, radius);
-
-        //sendMsg(srvLocation + '/addAddress?addr=12 hasadot, ramat hasharon, israel');
-        //sendMsg(srvLocation + '/addAddress?addr=5 hasadot, ramat hasharon, israel');
-        //sendMsg(srvLocation + '/addAddress?addr=16 haganim, ramat hasharon, israel');
-        //sendMsg(srvLocation + '/neighbours?radius=500&addr=7 hasadot, ramat hasharon, israel');
     }
 
     function onInit() {
