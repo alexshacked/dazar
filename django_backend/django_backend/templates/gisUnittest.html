@@ -98,7 +98,7 @@
     function testOneStreet(baseUri, street, range, numAddresses) {
         asyncDisplay('**** Start filling into the database the addresses of street: ' + street + ' ****\n');
         var startUri = baseUri + '/addAddress?addr=';
-        var start = document.form1.txtStart.value;
+        var start = parseInt(document.form1.txtStart.value);
         for (var i = start; i < (start + numAddresses); i++) { // 10 addresses on the street
             var houseAddr = i + ' ' + street;
             var uri = startUri + houseAddr;
@@ -122,7 +122,7 @@
 
         var street =   document.form1.txtStreet.value; //' ibn gvirol, tel aviv, israel';
         radius = document.form1.txtRadius.value;
-        numAddresses =  document.form1.txtAddrs.value;
+        numAddresses =  parseInt(document.form1.txtAddrs.value);
         testOneStreet(srvLocation, street, radius, numAddresses);
     }
 
