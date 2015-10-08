@@ -67,20 +67,11 @@
     }
 
     function scrollDown() {
+        var top = document.form1.results.offsetTop;
         var resultsArea = document.form1.results;
         if(resultsArea.selectionStart == resultsArea.selectionEnd) {
                 resultsArea.scrollTop = resultsArea.scrollHeight;
         }
-    }
-
-    function sendMsg(uri) {
-        var resultsArea = document.form1.results;
-
-        setTimeout(function() {
-            resultsArea.value += 'Doing:  ' + uri + '\n';
-            resultsArea.value += parseResponse(doSend(uri));
-            scrollDown();
-        }, 0);
     }
 
     function asyncDisplay(msg) {
@@ -99,23 +90,47 @@
         doSend(target)
     }
 
-    function testOneStreet(baseUri, street, range, numAddresses) {
-        asyncDisplay('**** Start filling into the database the addresses of street: ' + street + ' ****\n');
-        var startUri = baseUri + '/addAddress?addr=';
-        var start = parseInt(document.form1.txtStart.value);
-        for (var i = start; i < (start + numAddresses); i++) { // 10 addresses on the street
-            var houseAddr = i + ' ' + street;
-            var uri = startUri + houseAddr;
-            sendMsg(uri);
+    function sendMsg(uri) {
+        var resultsArea = document.form1.results;
+        resultsArea.value += 'Doing:  ' + uri + '\n';
+        resultsArea.value += parseResponse(doSend(uri));
+        scrollDown();
+    }
+
+
+    function loopMaster(start, end, addUri, neighboursUri, street, count, begin, startNeighMsg) {
+        if (start < end && count == 0) {
+            setTimeout(function loopServant() {
+                var houseAddr = start + ' ' + street;
+                var uri = addUri + houseAddr;
+                sendMsg(uri);
+                loopMaster(start + 1, end, addUri, neighboursUri, street, count, begin, startNeighMsg);
+            }, 0);
+            return;
+        } else if (start == end && count == 0 ) {
+            count  = 1;
+            start = begin;
+            asyncDisplay(startNeighMsg);
         }
 
-        asyncDisplay('**** Start getting neighbours for each addresses of street: ' + street + ' in range of ' + range + ' meters ****\n');
-        startUri = baseUri + '/neighbours?radius=' + range + '&addr=';
-        for (var i = start; i < (start + numAddresses); i++) { // 10 addresses on the street
-            var houseAddr = i + ' ' + street;
-            var uri = startUri + houseAddr;
-            sendMsg(uri);
+        if (start < end) {
+            setTimeout(function loopServant() {
+                var houseAddr = start + ' ' + street;
+                var uri = neighboursUri + houseAddr;
+                sendMsg(uri);
+                loopMaster(start + 1, end, addUri, neighboursUri, street, count, begin, startNeighMsg);
+            }, 0);
         }
+    }
+
+    function testOneStreet(baseUri, street, range, numAddresses) {
+        asyncDisplay('**** Start filling into the database the addresses of street: ' + street + ' ****\n');
+        var startNeighMsg = '**** Start getting neighbours for each addresses of street: ' + street + ' in range of ' + range + ' meters ****\n';
+        var addUri = baseUri + '/addAddress?addr=';
+        var neighboursUri = baseUri + '/neighbours?radius=' + range + '&addr=';
+        var start = parseInt(document.form1.txtStart.value);
+        var end = start + numAddresses;
+        loopMaster(start, end, addUri, neighboursUri, street, 0, start, startNeighMsg);
     }
 
     function buttonStartTest() {
