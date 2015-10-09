@@ -51,18 +51,25 @@
     }
 
     function parseResponse(jsStr) {
-        if (jsStr === 'ok') {
-            return ''
+        var obj = JSON.parse(jsStr);
+        if (obj.status != 'OK') {
+            return obj.info;
         }
 
-        var res = '';
-        var obj = JSON.parse(jsStr);
-        var locs = obj.result;
+        var data = obj.data;
+        if (typeof data === 'string' || data instanceof String) {
+            return data + '\n'
+        }
+
+        // for now if data is not a string, then it is an array
+        res = ''
+        var locs = data
         for  (var idx in locs) {
             var one = 'Address: ' + locs[idx].address + ' *** Coordinates: longitude  ' + locs[idx].coordinates.longitude + '    latitude  ' + locs[idx].coordinates.latitude;
             res += one;
             res += '\n';
         }
+        res += '\n';
         return res;
     }
 
@@ -146,8 +153,7 @@
     }
 
     function onInit() {
-        var uri = document.form1.txtUri;
-        uri.value = 'dazar.io'
+        document.form1.txtUri.value = 'dazar.io'
         document.form1.txtRadius.value = 25;
         document.form1.txtAddrs.value = 10;
         document.form1.txtStreet.value = 'ibn gvirol, tel aviv, israel';

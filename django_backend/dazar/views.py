@@ -8,6 +8,16 @@ import re
 import urllib2
 import json
 
+def makeReturn(status, payload):
+    retblock = {}
+    retblock['status'] = status
+    if status == 'OK':
+        retblock['data'] = payload
+    else:
+        retblock['info'] = payload
+
+    return retblock
+
 def geocodeFromGoogle(civil_addr):
     start = 'https://maps.googleapis.com/maps/api/geocode/json?address='
     mid = civil_addr
@@ -16,9 +26,11 @@ def geocodeFromGoogle(civil_addr):
 
     geocode = urllib2.urlopen(uri).read()
     jsonObject = json.loads(geocode)
-    coords = jsonObject['results'][0]['geometry']['location']
+    if jsonObject['status'] != 'OK':
+        return makeReturn('FAIL', 'google maps api - method geocode() failed')
 
-    return coords
+    coords = jsonObject['results'][0]['geometry']['location']
+    return makeReturn('OK', coords)
 
 def extractAddress(request):
     initial_addr = request.GET['addr']
@@ -29,53 +41,71 @@ def extractAddress(request):
 def addAddress(request):
     initial_addr, formatted_addr = extractAddress(request)
     geocode = geocodeFromGoogle(formatted_addr)
+    if geocode['status'] != 'OK':
+        return HttpResponse(json.dumps(geocode))
+    else:
+        geocode = geocode['data']
 
     pt = Point(type = 'Point', coordinates = [float(geocode['lng']), float(geocode['lat'])] )
+    try:
+        doc = Locations.objects.create(address=initial_addr, point=pt)
+        doc.save()
+    except Exception as e:
+        return HttpResponse(json.dumps(makeReturn('FAIL','Failed on access to MongoDb  ------- ' + e.message)))
 
-    doc = Locations.objects.create(address=initial_addr, point=pt)
-    doc.save()
-    return HttpResponse('ok')
+    return HttpResponse(json.dumps(makeReturn('OK','OK')))
 
 def parseMongoResponse(queryset):
-    res = {}
-    res['result'] = []
+    res = []
     for q in queryset:
         store = {}
         store['address'] = q.address
         store['coordinates'] = {'latitude':q.point.coordinates[1], 'longitude':q.point.coordinates[0]}
-        res['result'].append(store)
+        res.append(store)
 
-    return json.dumps(res)
+    return res
 
 # API
 def neighbours(request):
     initial_addr, formatted_addr = extractAddress(request)
     geocode = geocodeFromGoogle(formatted_addr)
+    if geocode['status'] != 'OK':
+        return HttpResponse(json.dumps(geocode))
+    else:
+        geocode = geocode['data']
 
     maxDistance = int(request.GET['radius'])
     lat = float(geocode['lat'])
     lng = float(geocode['lng'])
     query = { 'point': { '$near': {'$geometry': {'type':"Point", 'coordinates': [lng, lat]}, '$maxDistance': maxDistance } } }
 
-    queryset = Locations.objects.raw_query(query)
     try:
+        queryset = Locations.objects.raw_query(query)
         n = len(queryset) # probably a Django MongoDB Engine issue. Empty queryset does not support the contract API
-    except:
-        return HttpResponse('none')
+    except Exception as e:
+        return HttpResponse(json.dumps(makeReturn('FAIL','Failed on access to MongoDb  ------- ' + e.message)))
 
     res = parseMongoResponse(queryset);
-    return HttpResponse(res)
+    return HttpResponse(json.dumps(makeReturn('OK',res)))
 
 # API
 def all(request):
-    queryset = Locations.objects.all()
+    try:
+        queryset = Locations.objects.all()
+        n = len(queryset) # probably a Django MongoDB Engine issue. Empty queryset does not support the contract API
+    except Exception as e:
+        return HttpResponse(json.dumps(makeReturn('FAIL','Failed on access to MongoDb  ------- ' + e.message)))
+
     res = parseMongoResponse(queryset);
-    return HttpResponse(res)
+    return HttpResponse(json.dumps(makeReturn('OK',res)))
 
 # API
 def truncate(request):
-    Locations.objects.all().delete()
-    return HttpResponse('ok')
+    try:
+        Locations.objects.all().delete()
+    except Exception as e:
+        return HttpResponse(json.dumps(makeReturn('FAIL','Failed on access to MongoDb  ------- ' + e.message)))
+    return HttpResponse(json.dumps(makeReturn('OK','OK')))
 
 # API
 def gisUnittest(request):
