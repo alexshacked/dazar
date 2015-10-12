@@ -31,16 +31,16 @@
     </p>
     <p>
         CATEGORIES: ------
-        <input type="checkbox" name="restaurants" value=1> Restaurants
-        <input type="checkbox" name="cafes" value=1> Cafes
-        <input type="checkbox" name="clothing" value=1> Clothing
-        <input type="checkbox" name="shoes" value=1> Shoes
-        <input type="checkbox" name="electronix" value=1> Electronix
-        <input type="checkbox" name="beauty" value=1> Beauty
-        <input type="checkbox" name="home" value=1> Home
-        <input type="checkbox" name="grocery" value=1> Grocery
-        <input type="checkbox" name="kids" value=1> Kids
-        <input type="checkbox" name="media" value=1> Media
+        <input type="checkbox" name="boxRegRestaurants" value=1> Restaurants
+        <input type="checkbox" name="boxRegCafes" value=1> Cafes
+        <input type="checkbox" name="boxRegClothing" value=1> Clothing
+        <input type="checkbox" name="boxRegShoes" value=1> Shoes
+        <input type="checkbox" name="boxRegElectronix" value=1> Electronix
+        <input type="checkbox" name="boxRegBeauty" value=1> Beauty
+        <input type="checkbox" name="boxRegHome" value=1> Home
+        <input type="checkbox" name="boxRegGrocery" value=1> Grocery
+        <input type="checkbox" name="boxRegKids" value=1> Kids
+        <input type="checkbox" name="boxRegMedia" value=1> Media
     </p>
     </fieldset>
     &nbsp
@@ -64,16 +64,16 @@
     </p>
      <p>
          CATEGORIES: ------
-        <input type="checkbox" name="restaurants" value=1> Restaurants
-        <input type="checkbox" name="cafes" value=1> Cafes
-        <input type="checkbox" name="clothing" value=1> Clothing
-        <input type="checkbox" name="shoes" value=1> Shoes
-        <input type="checkbox" name="electronix" value=1> Electronix
-        <input type="checkbox" name="beauty" value=1> Beauty
-        <input type="checkbox" name="home" value=1> Home
-        <input type="checkbox" name="grocery" value=1> Grocery
-        <input type="checkbox" name="kids" value=1> Kids
-        <input type="checkbox" name="media" value=1> Media
+        <input type="checkbox" name="boxGetRestaurants" value=1> Restaurants
+        <input type="checkbox" name="boxGetgCafes" value=1> Cafes
+        <input type="checkbox" name="boxGetClothing" value=1> Clothing
+        <input type="checkbox" name="boxGetShoes" value=1> Shoes
+        <input type="checkbox" name="boxGetElectronix" value=1> Electronix
+        <input type="checkbox" name="boxGetBeauty" value=1> Beauty
+        <input type="checkbox" name="boxGetHome" value=1> Home
+        <input type="checkbox" name="boxGetGrocery" value=1> Grocery
+        <input type="checkbox" name="boxGetKids" value=1> Kids
+        <input type="checkbox" name="boxGetMedia" value=1> Media
      </p>
      </fieldset>
      &nbsp
@@ -88,85 +88,168 @@
     &nbsp
     <fieldset>
     <p>
-        Result:
+        <pre>Messages:                                                   Output:</pre>
     </p>
     <p>
-        <textarea rows="15" cols="120"  style="color: black; background-color: lightyellow; font-size:95%" name="results"></textarea>
+        <textarea rows="15" cols="55"  style="color: black; background-color: lightyellow; font-size:95%" name="messages"></textarea>
+        <textarea rows="15" cols="55"  style="color: black; background-color: lightyellow; font-size:95%" name="output"></textarea>
     </p>
     </fieldset>
 </form>
 
 <script>
     var buttonRegister = document.form1.buttonRegister;
-    var numberOfClicks = 0;
+    var cmdRegister = '/registerVendor'
 
-    function doSend(srvLocation) {
+    var catAll = "all";
+    var catRestaurants = "restaurants";
+    var catCafes = "cafes";
+    var catClothing = "clothing";
+    var catShoes = "shoes";
+    var catElectronix = "electronix";
+    var catBeauty = "beauty";
+    var catHome = "home";
+    var catGrocery = "grocery";
+    var catKids = "kids";
+    var catMedia = "media";
+
+    function doSend(srvLocation, body) {
         xmlHttp = new XMLHttpRequest();
-        var Url = "http://" + srvLocation
-        xmlHttp.open( "GET", Url, false );
+        var uri = "http://" + srvLocation
+        xmlHttp.open( "POST", uri, false );
         xmlHttp.setRequestHeader("withCredentials", "false");
-        xmlHttp.send( null );
+        xmlHttp.send( body );
         return xmlHttp.responseText;
     }
 
     function parseResponse(jsStr) {
         var obj = JSON.parse(jsStr);
-        if (obj.status != 'OK') {
-            return obj.info;
-        }
+        showResponse(obj);
 
-        var data = obj.data;
-        if (typeof data === 'string' || data instanceof String) {
-            return data + '\n'
+        if (obj.command == 'registerVendor') {
+            return parseResponseRegisterVendor(obj);
         }
+        else {
+           return  parseResponseUnknown(obj)
+        }
+    }
 
-        // for now if data is not a string, then it is an array
-        res = ''
-        var locs = data
-        for  (var idx in locs) {
-            var one = 'Address: ' + locs[idx].address + ' *** Coordinates: longitude  ' + locs[idx].coordinates.longitude + '    latitude  ' + locs[idx].coordinates.latitude;
-            res += one;
-            res += '\n';
-        }
-        res += '\n';
-        return res;
+    function parseResponseRegisterVendor(obj) {
+        var vendorId = obj.data.vendorId
+        return 'vendorId: ' + vendorId;
+    }
+
+    function parseResponseUnknown(obj) {
+        return 'response unknown for command: ' + obj.command;
     }
 
     function scrollDown() {
-        var top = document.form1.results.offsetTop;
-        var resultsArea = document.form1.results;
-        if(resultsArea.selectionStart == resultsArea.selectionEnd) {
-                resultsArea.scrollTop = resultsArea.scrollHeight;
+        var top = document.form1.messages.offsetTop;
+        var messagesArea = document.form1.messages;
+        if(messagesArea.selectionStart == messagesArea.selectionEnd) {
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        top = document.form1.output.offsetTop;
+        var outputArea = document.form1.output;
+        if(outputArea.selectionStart == outputArea.selectionEnd) {
+                moutputArea.scrollTop = outputArea.scrollHeight;
         }
     }
 
     function cleanDisplay() {
-        document.form1.results.value = '';
+        document.form1.messages.value = '';
+        document.form1.output.value = '';
     }
 
-    function sendMsg(uri) {
-        var resultsArea = document.form1.results;
-        resultsArea.value += parseResponse(doSend(uri));
+    function showRequest(uri, str) {
+        var area = document.form1.messages;
+        area.value += 'Request sent:\n'
+        area.value +=  uri
+        area.value += '\n'
+        area.value += str;
+        area.value += '\n\n'
+    }
+
+    function showResponse(obj) {
+        var area = document.form1.messages;
+        area.value += 'Response received:\n'
+
+        var flat = JSON.stringify(obj, null, 2);
+        area.value += flat;
+        area.value += '\n\n'
+    }
+
+    function sendMsg(uri, body) {
+        var outputArea = document.form1.output;
+        outputArea.value += parseResponse(doSend(uri, body));
         scrollDown();
     }
 
-    function buttonRegister() {
-        var srvLocation = document.form1.txtUri.value;
+    function getRegisterTags() {
+        tags = [];
+        if (document.form1.boxRegRestaurants.checked) {
+            tags.push(catRestaurants);
+        }
+        if (document.form1.boxRegCafes.checked) {
+            tags.push(catCafes);
+        }
+        if (document.form1.boxRegClothing.checked) {
+            tags.push(catClothing);
+        }
+        if (document.form1.boxRegShoes.checked) {
+            tags.push(catShoes);
+        }
+        if (document.form1.boxRegElectronix.checked) {
+            tags.push(catElectronix);
+        }
+        if (document.form1.boxRegBeauty.checked) {
+            tags.push(catBeauty);
+        }
+        if (document.form1.boxRegHome.checked) {
+            tags.push(catHome);
+        }
+        if (document.form1.boxRegGrocery.checked) {
+            tags.push(catGrocery);
+        }
+        if (document.form1.boxRegKids.checked) {
+            tags.push(catKids);
+        }
+        if (document.form1.boxRegMedia.checked) {
+            tags.push(catMedia);
+        }
+        if (tags.length == 0) {
+            tags.push(catAll);
+        }
+        return tags;
+    }
 
-        cleanDB(srvLocation);
+    function OnRegister() {
         cleanDisplay();
 
-        var street =   document.form1.txtStreet.value; //' ibn gvirol, tel aviv, israel';
-        radius = document.form1.txtRadius.value;
-        numAddresses =  parseInt(document.form1.txtAddrs.value);
-        testOneStreet(srvLocation, street, radius, numAddresses);
+        var uri = document.form1.txtUri.value + cmdRegister;
+        var vendor = document.form1.txtVendorName.value;
+        var address =  document.form1.txtAddress.value;
+        var phone = document.form1.txtPhone.value;
+        var tags = getRegisterTags();
+
+
+        var body = {};
+        body.vendor = vendor;
+        body.address = address;
+        body.phone = phone;
+        body.tags = tags;
+        var flat = JSON.stringify(body, null, 2);
+
+        showRequest(uri, flat);
+        sendMsg(uri, flat);
     }
 
     function onInit() {
-        document.form1.txtUri.value = 'dazar.io'
+        document.form1.txtUri.value = "localhost";
     }
 
-    buttonRegister.addEventListener("click", buttonRegister);
+    buttonRegister.addEventListener("click", OnRegister);
 
 </script>
 

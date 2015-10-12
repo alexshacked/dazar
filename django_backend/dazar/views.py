@@ -12,7 +12,10 @@ import json
 class DazarAPI:
     def registerVendor(self, request):
         body = json.loads(request.body)
-        return HttpResponse(body['data'])
+
+        response = {}
+        response['vendorId'] = 1111
+        return HttpResponse(json.dumps(self._makeReturn('OK', 'registerVendor', response)))
 
     def addTweet(self, request):
         return HttpResponse('Hello from addTweet')
@@ -23,7 +26,7 @@ class DazarAPI:
     # DEBUG API
     def debugAddAddress(self, request):
         initial_addr, formatted_addr = self._extractAddress(request)
-        geocode = self._geocodeFromGoogle(formatted_addr)
+        geocode = self._geocodeFromGoogle(formatted_addr, 'debugAddAddress')
         if geocode['status'] != 'OK':
             return HttpResponse(json.dumps(geocode))
         else:
@@ -34,14 +37,14 @@ class DazarAPI:
             doc = Locations.objects.create(address=initial_addr, point=pt)
             doc.save()
         except Exception as e:
-            return HttpResponse(json.dumps(self._makeReturn('FAIL','Failed on access to MongoDb  ------- ' + e.message)))
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','debugAddAddress', 'Failed on access to MongoDb  ------- ' + e.message)))
 
-        return HttpResponse(json.dumps(self._makeReturn('OK','OK')))
+        return HttpResponse(json.dumps(self._makeReturn('OK', 'debugAddAddress', 'OK')))
 
     # DEBUG API
     def debugNeighbours(self, request):
         initial_addr, formatted_addr = self._extractAddress(request)
-        geocode = self._geocodeFromGoogle(formatted_addr)
+        geocode = self._geocodeFromGoogle(formatted_addr, 'debugNeighbours')
         if geocode['status'] != 'OK':
             return HttpResponse(json.dumps(geocode))
         else:
@@ -56,10 +59,10 @@ class DazarAPI:
             queryset = Locations.objects.raw_query(query)
             n = len(queryset) # probably a Django MongoDB Engine issue. Empty queryset does not support the contract API
         except Exception as e:
-            return HttpResponse(json.dumps(self._makeReturn('FAIL','Failed on access to MongoDb  ------- ' + e.message)))
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'debugNeighbours', 'Failed on access to MongoDb  ------- ' + e.message)))
 
         res = self._parseMongoResponse(queryset);
-        return HttpResponse(json.dumps(self._makeReturn('OK',res)))
+        return HttpResponse(json.dumps(self._makeReturn('OK', 'debugNeighbours', res)))
 
     # DEBUG API
     def debugAll(self, request):
@@ -67,18 +70,18 @@ class DazarAPI:
             queryset = Locations.objects.all()
             n = len(queryset) # probably a Django MongoDB Engine issue. Empty queryset does not support the contract API
         except Exception as e:
-            return HttpResponse(json.dumps(self._makeReturn('FAIL','Failed on access to MongoDb  ------- ' + e.message)))
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'debugAll', 'Failed on access to MongoDb  ------- ' + e.message)))
 
         res = self._parseMongoResponse(queryset);
-        return HttpResponse(json.dumps(self._makeReturn('OK',res)))
+        return HttpResponse(json.dumps(self._makeReturn('OK', 'debugAll', res)))
 
     # DEBUG API
     def debugTruncate(self, request):
         try:
             Locations.objects.all().delete()
         except Exception as e:
-            return HttpResponse(json.dumps(self._makeReturn('FAIL','Failed on access to MongoDb  ------- ' + e.message)))
-        return HttpResponse(json.dumps(self._makeReturn('OK','OK')))
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'debugTruncate', 'Failed on access to MongoDb  ------- ' + e.message)))
+        return HttpResponse(json.dumps(self._makeReturn('OK', 'debugTruncate', 'OK')))
 
     # DEBUG API
     def debugGisUnittest(self, request):
@@ -92,9 +95,10 @@ class DazarAPI:
         html = t.render( Context({}) )
         return HttpResponse(html)
 
-    def _makeReturn(self, status, payload):
+    def _makeReturn(self, status, cmd, payload):
         retblock = {}
         retblock['status'] = status
+        retblock['command'] = cmd
         if status == 'OK':
             retblock['data'] = payload
         else:
@@ -112,7 +116,7 @@ class DazarAPI:
 
         return res
 
-    def _geocodeFromGoogle(self, civil_addr):
+    def _geocodeFromGoogle(self, civil_addr, cmd):
         start = 'https://maps.googleapis.com/maps/api/geocode/json?address='
         mid = civil_addr
         end = '&key=AIzaSyAQ_Qt1ohwtRK84fy18fUpYllL0sZhX0wo'
@@ -121,10 +125,10 @@ class DazarAPI:
         geocode = urllib2.urlopen(uri).read()
         jsonObject = json.loads(geocode)
         if jsonObject['status'] != 'OK':
-            return self._makeReturn('FAIL', 'google maps api - method geocode() failed')
+            return self._makeReturn('FAIL', cmd, 'google maps api - method geocode() failed')
 
         coords = jsonObject['results'][0]['geometry']['location']
-        return self._makeReturn('OK', coords)
+        return self._makeReturn('OK', cmd, coords)
 
     def _extractAddress(self, request):
         initial_addr = request.GET['addr']
