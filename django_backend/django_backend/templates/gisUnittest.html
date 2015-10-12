@@ -8,11 +8,15 @@
 
 <body bgcolor="gray" onload="onInit()">
 <form action="" name="form1"></p>
+    <fieldset>
     <p style="font-size:160%"><strong>Dazar - Unittesting basic GIS capabilities. APIs:</strong></p>
     <p><span style="font-size:130%">addAddress</span> - http://dazar.io/addAddress?addr=12 hasadot, ramat hasharon, israel</p>
     <p><span style="font-size:130%">neighbours</span> - http://dazar.io/neighbours?radius=300&addr=12 hasadot, ramat hasharon, israel</p>
     <p><span style="font-size:130%">all</span>        - http://dazar.io/all</p>
     <p><span style="font-size:130%">truncate</span>   - http://dazar.io/truncate</p>
+    </fieldset>
+    &nbsp
+    <fieldset>
     <p>
         URI:
         <input type="text" name="txtUri" size="30" maxlength="30" />
@@ -32,9 +36,20 @@
         After pressing button START and obtaining the results below you can verify the results of <b>neighbours</b> API here:
          <a href="http://www.mapdevelopers.com/distance_from_to.php">Calculate distance between two addresses</a>
     </p>
+        <p>
+            To see Dazar API for cellular apps:
+            <a href="/apiConsole">API Console</a>
+        </p>
+    </fieldset>
+    &nbsp
+    <fieldset>
+        <p>
+            Results:
+        </p>
     <p>
         <textarea rows="25" cols="120"  style="color: black; background-color: lightyellow; font-size:95%" name="results"></textarea>
     </p>
+    </fieldset>
 </form>
 
 <script>
