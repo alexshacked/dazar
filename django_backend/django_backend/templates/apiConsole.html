@@ -10,11 +10,6 @@
 <form action="" name="form1"></p>
     <fieldset>
     <p style="font-size:160%"><strong>Dazar Console - Web access to backend API for cellular apps</strong></p>
-    <p><span style="font-size:130%">register</span>     - http://dazar.io/register</p>
-    <p><span style="font-size:130%">unregister</span>   - http://dazar.io/unregister</p>
-    <p><span style="font-size:130%">addTweet</span>     - http://dazar.io/addTweet</p>
-    <p><span style="font-size:130%">removeTweet</span>  - http://dazar.io/removeTweet</p>
-    <p><span style="font-size:130%">getTweets</span>    - http://dazar.io/getTweets</p>
     </fieldset>
     &nbsp
     <fieldset>
@@ -22,12 +17,13 @@
         Server URI:
         <input type="text" name="txtUri" size="10" maxlength="10" />
     </p>
+    </fieldset>
+    &nbsp
+    <fieldset>
     <p>
-        <input type="button" name="buttonRegister" style="color: black; background-color: GreenYellow" value="Register" />
-        Business Id:
-        <input type="text" name="txtBusinessId" size="20" maxlength="20" />
-        Business Name:
-        <input type="text" name="txtBusinessName" size="20" maxlength="20" />
+        <input type="button" name="buttonRegister" style="color: black; background-color: GreenYellow" value="Register vendor" />
+        Vendor Name:
+        <input type="text" name="txtVendorName" size="20" maxlength="20" />
         Phone No.:
         <input type="text" name="txtPhone" size="20" maxlength="20" />
         Address:
@@ -46,16 +42,54 @@
         <input type="checkbox" name="kids" value=1> Kids
         <input type="checkbox" name="media" value=1> Media
     </p>
-
+    </fieldset>
+    &nbsp
+    <fieldset>
     <p>
-        <input type="button" name="buttonAddTweet" style="color: black; background-color: GreenYellow" value="AddTweet" />
+        <input type="button" name="buttonAddTweet" style="color: black; background-color: GreenYellow" value="Add tweet" />
+        Vendor Id:
+        <input type="text" name="txtVendorId" size="20" maxlength="20" />
+        Tweet:
+        <input type="text" name="txtTweet" size="90" maxlength="90" />
     </p>
     </fieldset>
     &nbsp
     <fieldset>
-        <p>
-            Result:
-        </p>
+    <p>
+        <input type="button" name="buttonGetTweets" style="color: black; background-color: GreenYellow" value="Get tweets" />
+        Latitude:
+        <input type="text" name="txtLatitude" size="20" maxlength="20" />
+        Longitude:
+        <input type="text" name="txtLongitude" size="20" maxlength="20" />
+    </p>
+     <p>
+         CATEGORIES: ------
+        <input type="checkbox" name="restaurants" value=1> Restaurants
+        <input type="checkbox" name="cafes" value=1> Cafes
+        <input type="checkbox" name="clothing" value=1> Clothing
+        <input type="checkbox" name="shoes" value=1> Shoes
+        <input type="checkbox" name="electronix" value=1> Electronix
+        <input type="checkbox" name="beauty" value=1> Beauty
+        <input type="checkbox" name="home" value=1> Home
+        <input type="checkbox" name="grocery" value=1> Grocery
+        <input type="checkbox" name="kids" value=1> Kids
+        <input type="checkbox" name="media" value=1> Media
+     </p>
+     </fieldset>
+     &nbsp
+     <fieldset>
+     <p>
+        <input type="button" name="buttonAddrs2Coords" style="color: black; background-color: PaleTurquoise" value="From Address to Coordinates" />
+        Customer Location Address:
+        <input type="text" name="txtCurrAddress" size="30" maxlength="30" />
+     </p>
+
+    </fieldset>
+    &nbsp
+    <fieldset>
+    <p>
+        Result:
+    </p>
     <p>
         <textarea rows="15" cols="120"  style="color: black; background-color: lightyellow; font-size:95%" name="results"></textarea>
     </p>

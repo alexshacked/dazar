@@ -7,7 +7,7 @@ from dazar.views import DazarAPI
 
 api = DazarAPI()
 urlpatterns = patterns('',
-    url(r'^register$', api.register),
+    url(r'^registerVendor$', api.registerVendor),
     url(r'^addTweet$', api.addTweet),
     url(r'^getTweets$', api.getTweets),
     url(r'^addAddress$', api.debugAddAddress),

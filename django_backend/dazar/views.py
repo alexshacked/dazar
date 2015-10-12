@@ -10,7 +10,7 @@ import json
 
 'The entry point to Dazar backend'
 class DazarAPI:
-    def register(self, request):
+    def registerVendor(self, request):
         body = json.loads(request.body)
         return HttpResponse(body['data'])
 
