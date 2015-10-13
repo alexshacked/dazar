@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 'The entry point to Dazar backend'
 class DazarAPI:
     def registerVendor(self, request):
-        valid = self._validateRequest(request)
-        if valid is not None:
-            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'registerVendor', valid)))
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'registerVendor', invalid)))
         self._doLog('DEBUG', 'registerVendor', request.body)
         body = json.loads(request.body)
 
@@ -24,10 +24,42 @@ class DazarAPI:
         return HttpResponse(json.dumps(self._makeReturn('OK', 'registerVendor', response)))
 
     def addTweet(self, request):
-        return HttpResponse('Hello from addTweet')
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'addTweet', invalid)))
+        self._doLog('DEBUG', 'addTweet', request.body)
+
+        return HttpResponse(json.dumps(self._makeReturn('OK', 'addTweet', 'OK')))
 
     def getTweets(self, request):
-        return HttpResponse('Hello from getTweets')
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getTweets', invalid)))
+        self._doLog('DEBUG', 'getTweets', request.body)
+        body = json.loads(request.body)
+
+        one = {}
+        one['vendorName'] = 'Sasha'
+        one['address'] = '30 Dizengoff, Tel Aviv, Israel'
+        one['tweet'] = 'Every third item for three'
+        one['coordinates'] = {}
+        one['coordinates']['latitude'] = 32.34567
+        one['coordinates']['longitude'] = 34.3173545
+        response = []
+        response.append(one)
+        return HttpResponse(json.dumps(self._makeReturn('OK', 'getTweets', response)))
+
+    # DEBUG API
+    def debugGetCoordinates(self, request):
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getCoordinates', invalid)))
+        self._doLog('DEBUG', 'debugGetCoordinates', request.body)
+        body = json.loads(request.body)
+
+        address = self._makeGoogleAddress(body['address'])
+        geocode = self._geocodeFromGoogle(address, "getCoordinates")
+        return HttpResponse(json.dumps(geocode))
 
     # DEBUG API
     def debugAddAddress(self, request):
@@ -128,7 +160,10 @@ class DazarAPI:
         end = '&key=AIzaSyAQ_Qt1ohwtRK84fy18fUpYllL0sZhX0wo'
         uri = start + mid + end
 
-        geocode = urllib2.urlopen(uri).read()
+        try:
+            geocode = urllib2.urlopen(uri).read()
+        except Exception as e:
+            return self._makeReturn('FAIL', cmd, 'google maps api - method geocode() failed: ' + e.msg)
         jsonObject = json.loads(geocode)
         if jsonObject['status'] != 'OK':
             return self._makeReturn('FAIL', cmd, 'google maps api - method geocode() failed')
@@ -136,9 +171,12 @@ class DazarAPI:
         coords = jsonObject['results'][0]['geometry']['location']
         return self._makeReturn('OK', cmd, coords)
 
+    def _makeGoogleAddress(self, addr):
+        return re.sub(r'[ ]+', '+', addr)
+
     def _extractAddress(self, request):
         initial_addr = request.GET['addr']
-        formatted_addr = re.sub(r'[ ]+', '+', initial_addr)
+        formatted_addr = self._makeGoogleAddress(initial_addr)
         return initial_addr, formatted_addr
 
     def _validateRequest(self, req):

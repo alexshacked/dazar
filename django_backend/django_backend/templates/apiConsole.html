@@ -41,6 +41,7 @@
         <input type="checkbox" name="boxRegGrocery" value=1> Grocery
         <input type="checkbox" name="boxRegKids" value=1> Kids
         <input type="checkbox" name="boxRegMedia" value=1> Media
+        <input type="checkbox" name="boxRegSports" value=1> Sports
     </p>
     </fieldset>
     &nbsp
@@ -61,11 +62,13 @@
         <input type="text" name="txtLatitude" size="20" maxlength="20" />
         Longitude:
         <input type="text" name="txtLongitude" size="20" maxlength="20" />
+        Radius:
+        <input type="text" name="txtRadius" size="20" maxlength="20" />
     </p>
      <p>
          CATEGORIES: ------
         <input type="checkbox" name="boxGetRestaurants" value=1> Restaurants
-        <input type="checkbox" name="boxGetgCafes" value=1> Cafes
+        <input type="checkbox" name="boxGetCafes" value=1> Cafes
         <input type="checkbox" name="boxGetClothing" value=1> Clothing
         <input type="checkbox" name="boxGetShoes" value=1> Shoes
         <input type="checkbox" name="boxGetElectronix" value=1> Electronix
@@ -74,6 +77,7 @@
         <input type="checkbox" name="boxGetGrocery" value=1> Grocery
         <input type="checkbox" name="boxGetKids" value=1> Kids
         <input type="checkbox" name="boxGetMedia" value=1> Media
+        <input type="checkbox" name="boxGetSports" value=1> Sports
      </p>
      </fieldset>
      &nbsp
@@ -81,7 +85,7 @@
      <p>
         <input type="button" name="buttonAddrs2Coords" style="color: black; background-color: PaleTurquoise" value="From Address to Coordinates" />
         Customer Location Address:
-        <input type="text" name="txtCurrAddress" size="30" maxlength="30" />
+        <input type="text" name="txtCurrAddress" size="50" maxlength="50" />
      </p>
 
     </fieldset>
@@ -99,7 +103,13 @@
 
 <script>
     var buttonRegister = document.form1.buttonRegister;
-    var cmdRegister = '/registerVendor'
+    var buttonAddTweet = document.form1.buttonAddTweet;
+    var buttonGetTweets = document.form1.buttonGetTweets;
+    var buttonGetCoordinates = document.form1.buttonAddrs2Coords;
+    var cmdRegister = '/registerVendor';
+    var cmdAddTweet = '/addTweet';
+    var cmdGetTweets = '/getTweets';
+    var cmdGetCoordinates = '/getCoordinates';
 
     var catAll = "all";
     var catRestaurants = "restaurants";
@@ -112,6 +122,7 @@
     var catGrocery = "grocery";
     var catKids = "kids";
     var catMedia = "media";
+    var catSports = "sports";
 
     function doSend(srvLocation, body) {
         xmlHttp = new XMLHttpRequest();
@@ -126,8 +137,21 @@
         var obj = JSON.parse(jsStr);
         showResponse(obj);
 
+        if (obj.status == "FAIL") {
+            return "request failed";
+        }
+
         if (obj.command == 'registerVendor') {
             return parseResponseRegisterVendor(obj);
+        }
+        else if (obj.command == 'addTweet') {
+            return parseResponseAddTweet(obj);
+        }
+        else if (obj.command == 'getTweets') {
+            return parseResponseGetTweets(obj);
+        }
+        else if (obj.command == 'getCoordinates') {
+            return parseResponseGetCoordinates(obj);
         }
         else {
            return  parseResponseUnknown(obj)
@@ -135,8 +159,32 @@
     }
 
     function parseResponseRegisterVendor(obj) {
-        var vendorId = obj.data.vendorId
+        var vendorId = obj.data.vendorId;
         return 'vendorId: ' + vendorId;
+    }
+
+    function parseResponseAddTweet(obj) {
+        var result = obj.data;
+        return 'result: ' + result;
+    }
+
+    function parseResponseGetTweets(obj) {
+        var neighbours = obj.data;
+        res = "";
+        for (var i = 0; i < neighbours.length; i++) {
+            var vendor = neighbours[i].vendorName
+            var tweet = neighbours[i].tweet;
+            var one = vendor + ":   " + tweet;
+            res += one;
+        }
+        return res;
+    }
+
+    function parseResponseGetCoordinates(obj) {
+        var latitude = obj.data.lat;
+        var longitude = obj.data.lng;
+        res = 'latitude: ' + latitude + '\n' + 'longitude: ' + longitude + '\n';
+        return res
     }
 
     function parseResponseUnknown(obj) {
@@ -164,16 +212,16 @@
 
     function showRequest(uri, str) {
         var area = document.form1.messages;
-        area.value += 'Request sent:\n'
-        area.value +=  ('http://' + uri)
-        area.value += '\n'
+        area.value += '*****************  request sent:  *****************\n';
+        area.value +=  ('http://' + uri);
+        area.value += '\n';
         area.value += str;
-        area.value += '\n\n'
+        area.value += '\n\n';
     }
 
     function showResponse(obj) {
         var area = document.form1.messages;
-        area.value += 'Response received:\n'
+        area.value += '*****************  response received:  *****************\n';
 
         var flat = JSON.stringify(obj, null, 2);
         area.value += flat;
@@ -218,6 +266,50 @@
         if (document.form1.boxRegMedia.checked) {
             tags.push(catMedia);
         }
+        if (document.form1.boxRegSports.checked) {
+            tags.push(catSports);
+        }
+        if (tags.length == 0) {
+            tags.push(catAll);
+        }
+        return tags;
+    }
+
+    function getTweetsTags() {
+        tags = [];
+        if (document.form1.boxRegRestaurants.checked) {
+            tags.push(catRestaurants);
+        }
+        if (document.form1.boxGetCafes.checked) {
+            tags.push(catCafes);
+        }
+        if (document.form1.boxGetClothing.checked) {
+            tags.push(catClothing);
+        }
+        if (document.form1.boxGetShoes.checked) {
+            tags.push(catShoes);
+        }
+        if (document.form1.boxGetElectronix.checked) {
+            tags.push(catElectronix);
+        }
+        if (document.form1.boxGetBeauty.checked) {
+            tags.push(catBeauty);
+        }
+        if (document.form1.boxGetHome.checked) {
+            tags.push(catHome);
+        }
+        if (document.form1.boxGetGrocery.checked) {
+            tags.push(catGrocery);
+        }
+        if (document.form1.boxGetKids.checked) {
+            tags.push(catKids);
+        }
+        if (document.form1.boxGetMedia.checked) {
+            tags.push(catMedia);
+        }
+        if (document.form1.boxGetSports.checked) {
+            tags.push(catSports);
+        }
         if (tags.length == 0) {
             tags.push(catAll);
         }
@@ -245,11 +337,65 @@
         sendMsg(uri, flat);
     }
 
+    function OnAddTweet() {
+        cleanDisplay();
+
+        var uri = document.form1.txtUri.value + cmdAddTweet;
+        var vendorId = document.form1.txtVendorId.value;
+        var tweet =  document.form1.txtTweet.value;
+
+        var body = {};
+        body.vendorId = vendorId;
+        body.tweet = tweet;
+        var flat = JSON.stringify(body, null, 2);
+
+        showRequest(uri, flat);
+        sendMsg(uri, flat);
+    }
+
+    function OnGetTweets() {
+        cleanDisplay();
+
+        var uri = document.form1.txtUri.value + cmdGetTweets;
+        var latitude = document.form1.txtLatitude.value;
+        var longitude =  document.form1.txtLongitude.value;
+        var radius =  document.form1.txtRadius.value;
+        var tags = getTweetsTags();
+
+        var body = {};
+        body.latitude = latitude;
+        body.longitude = longitude;
+        body.radius = radius;
+        body.tags = tags;
+        var flat = JSON.stringify(body, null, 2);
+
+        showRequest(uri, flat);
+        sendMsg(uri, flat);
+    }
+
+    function OnGetCoordinates() {
+        cleanDisplay();
+
+        var uri = document.form1.txtUri.value + cmdGetCoordinates;
+        var address = document.form1.txtCurrAddress.value;
+
+        var body = {};
+        body.address = address;
+        var flat = JSON.stringify(body, null, 2);
+
+        showRequest(uri, flat);
+        sendMsg(uri, flat);
+    }
+
+
     function onInit() {
         document.form1.txtUri.value = "dazar.io";
     }
 
     buttonRegister.addEventListener("click", OnRegister);
+    buttonAddTweet.addEventListener("click", OnAddTweet);
+    buttonGetTweets.addEventListener("click", OnGetTweets);
+    buttonGetCoordinates.addEventListener("click", OnGetCoordinates);
 
 </script>
 
