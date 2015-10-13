@@ -165,7 +165,7 @@
     function showRequest(uri, str) {
         var area = document.form1.messages;
         area.value += 'Request sent:\n'
-        area.value +=  uri
+        area.value +=  ('http://' + uri)
         area.value += '\n'
         area.value += str;
         area.value += '\n\n'
@@ -246,7 +246,7 @@
     }
 
     function onInit() {
-        document.form1.txtUri.value = "localhost";
+        document.form1.txtUri.value = "dazar.io";
     }
 
     buttonRegister.addEventListener("click", OnRegister);

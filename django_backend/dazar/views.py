@@ -7,10 +7,16 @@ from models import Point
 import re
 import urllib2
 import json
+import logging
+logger = logging.getLogger(__name__)
 
 'The entry point to Dazar backend'
 class DazarAPI:
     def registerVendor(self, request):
+        valid = self._validateRequest(request)
+        if valid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'registerVendor', valid)))
+        self._doLog('DEBUG', 'registerVendor', request.body)
         body = json.loads(request.body)
 
         response = {}
@@ -134,6 +140,20 @@ class DazarAPI:
         initial_addr = request.GET['addr']
         formatted_addr = re.sub(r'[ ]+', '+', initial_addr)
         return initial_addr, formatted_addr
+
+    def _validateRequest(self, req):
+        if req.body == None:
+            return 'request body is null'
+        elif len(req.body) == 0:
+            return 'request body is an empty string'
+        else:
+            return None
+
+    def _doLog(self, level, cmd, msg):
+        fullMsg = "Request: " + cmd + '\n' + msg
+
+        if level == 'DEBUG':
+            logger.debug(fullMsg)
 
 
 
