@@ -19,7 +19,7 @@
     <fieldset>
     <p>
         Domain:
-        <input type="text" name="txtUri" size="30" maxlength="30" />
+        <input type="text" name="txtUri" size="30" maxlength="30" readonly style="background-color:LightGray;border-color:LightGray"/>
         Radius:
         <input type="text" name="txtRadius" size="5" maxlength="5" />
         Street:
@@ -168,7 +168,7 @@
     }
 
     function onInit() {
-        document.form1.txtUri.value = 'dazar.io'
+        document.form1.txtUri.value = window.location.host;
         document.form1.txtRadius.value = 25;
         document.form1.txtAddrs.value = 10;
         document.form1.txtStreet.value = 'ibn gvirol, tel aviv, israel';
