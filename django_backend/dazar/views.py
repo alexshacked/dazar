@@ -1,26 +1,54 @@
 from django.http import HttpResponse
 from django.template.loader import get_template
 from django.template import Context
-from models import Locations
 from models import Point
+from models import Vendors
+from models import Locations
 
 import re
 import urllib2
 import json
 import logging
+import datetime
 logger = logging.getLogger(__name__)
 
 'The entry point to Dazar backend'
 class DazarAPI:
     def registerVendor(self, request):
+        # ingest request
         invalid = self._validateRequest(request)
         if invalid is not None:
             return HttpResponse(json.dumps(self._makeReturn('FAIL', 'registerVendor', invalid)))
         self._doLog('DEBUG', 'registerVendor', request.body)
         body = json.loads(request.body)
 
+        # get coordinates for the business location
+        formatted_address = self._makeGoogleAddress(body['address'])
+        geocode = self._geocodeFromGoogle(formatted_address, "getCoordinates")
+        if geocode['status'] == 'FAIL':
+            return HttpResponse(json.dumps(geocode))
+
+        # make sure this vendor is not registered already
+        try:
+            vendor = Vendors.objects.get(name =body['vendor'], phone=body['phone'] )
+            # if mongodb did not throw an exception, it means the object exists. we must leave.
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','registerVendor', 'Vendor <' + body['vendor'] + '> is already registered')))
+        except Exception as e:
+            pass; # this is good actually. means the object does not exist
+
+        # insert the new vendor in mongodb
+        pt = Point(type = 'Point', coordinates = [float(geocode['data']['lng']), float(geocode['data']['lat'])] )
+        now = datetime.datetime.now()
+        try:
+            doc = Vendors.objects.create(name =body['vendor'], address=body['address'],
+                                         phone=body['phone'], tags=body['tags'],location=pt, registrationTime = now)
+            doc.save()
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','registerVendor', 'Failed on access to MongoDb  ------- ' + e.message)))
+
+        # respond
         response = {}
-        response['vendorId'] = 1111
+        response['vendorId'] = doc.id
         return HttpResponse(json.dumps(self._makeReturn('OK', 'registerVendor', response)))
 
     def addTweet(self, request):
@@ -37,6 +65,8 @@ class DazarAPI:
             return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getTweets', invalid)))
         self._doLog('DEBUG', 'getTweets', request.body)
         body = json.loads(request.body)
+
+        # vendor = Vendors.objects.get(id = '561e60c780b84ab78ff07c0f')
 
         one = {}
         one['vendorName'] = 'Sasha'
