@@ -17,8 +17,14 @@ class Vendors(models.Model):
     registrationTime = models.DateTimeField()
 
 class Tweets(models.Model):
-    user = models.CharField(max_length=200)
-    comments = ListField()
+    message = models.CharField(max_length=200)
+    vendorId = models.CharField(max_length=200)
+    vendorName = models.CharField(max_length=200)
+    vendorAddress = models.CharField(max_length=200)
+    vendorPhone = models.CharField(max_length=200)
+    vendorTags= ListField()
+    vendorLocation = EmbeddedModelField('Point')
+    creationTime = models.DateTimeField()
 
 class Locations(models.Model):
     address = models.CharField(max_length=200)

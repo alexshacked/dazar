@@ -4,6 +4,8 @@ from django.template import Context
 from models import Point
 from models import Vendors
 from models import Locations
+from models import Tweets
+from pymongo.errors import ServerSelectionTimeoutError
 
 import re
 import urllib2
@@ -31,7 +33,7 @@ class DazarAPI:
         # make sure this vendor is not registered already
         try:
             vendor = Vendors.objects.get(name =body['vendor'], phone=body['phone'] )
-            # if mongodb did not throw an exception, it means the object exists. we must leave.
+            # if mongodb did not throw an exception, it means the vendor is already in. we must leave.
             return HttpResponse(json.dumps(self._makeReturn('FAIL','registerVendor', 'Vendor <' + body['vendor'] + '> is already registered')))
         except Exception as e:
             pass; # this is good actually. means the object does not exist
@@ -52,10 +54,44 @@ class DazarAPI:
         return HttpResponse(json.dumps(self._makeReturn('OK', 'registerVendor', response)))
 
     def addTweet(self, request):
+        # ingest request
         invalid = self._validateRequest(request)
         if invalid is not None:
             return HttpResponse(json.dumps(self._makeReturn('FAIL', 'addTweet', invalid)))
         self._doLog('DEBUG', 'addTweet', request.body)
+        body = json.loads(request.body)
+
+        # get the vendor data from the vendors table in mongodb
+        try:
+            vendor = Vendors.objects.get(id = body['vendorId'])
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','addTweet', 'vendorId <' + body['vendorId'] + '> is not registered')))
+
+        # find out if this vendor creates a new tweet or updates an existing one
+        newTweet = False
+        try:
+            tweet = Tweets.objects.get(vendorId = body['vendorId'])
+        except Exception as e:
+            if type(e) is ServerSelectionTimeoutError:
+                return HttpResponse(json.dumps(self._makeReturn('FAIL','addTweet', 'mongodb is down')))
+            newTweet = True
+
+        # create or update the tweet
+        if newTweet == True:
+            now = datetime.datetime.now()
+            try:
+                doc = Tweets.objects.create(message =body['tweet'], vendorId = body['vendorId'], vendorName = vendor.name, vendorAddress = vendor.address,
+                                         vendorPhone = vendor.phone, vendorTags = vendor.tags, vendorLocation = vendor.location,
+                                         creationTime = now)
+                doc.save()
+            except Exception as e:
+                return HttpResponse(json.dumps(self._makeReturn('FAIL','addTweet', 'Failed on access to MongoDb  ------- ' + e.message)))
+        else: # update
+            try:
+                tweet.message = body['tweet']
+                tweet.save()
+            except Exception as e:
+                return HttpResponse(json.dumps(self._makeReturn('FAIL','addTweet', 'Failed on access to MongoDb  ------- ' + e.message)))
 
         return HttpResponse(json.dumps(self._makeReturn('OK', 'addTweet', 'OK')))
 
