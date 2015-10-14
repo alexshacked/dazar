@@ -102,17 +102,35 @@ class DazarAPI:
         self._doLog('DEBUG', 'getTweets', request.body)
         body = json.loads(request.body)
 
-        # vendor = Vendors.objects.get(id = '561e60c780b84ab78ff07c0f')
+        patronTags = body['tags']
+        maxDistance = int(body['radius'])
+        lat = float(body['latitude'])
+        lng = float(body['longitude'])
+        query = { 'vendorLocation': { '$near': {'$geometry': {'type':"Point", 'coordinates': [lng, lat]}, '$maxDistance': maxDistance } } }
 
-        one = {}
-        one['vendorName'] = 'Sasha'
-        one['address'] = '30 Dizengoff, Tel Aviv, Israel'
-        one['tweet'] = 'Every third item for three'
-        one['coordinates'] = {}
-        one['coordinates']['latitude'] = 32.34567
-        one['coordinates']['longitude'] = 34.3173545
+        try:
+            queryset = Tweets.objects.raw_query(query)
+            n = len(queryset) # probably a Django MongoDB Engine issue. Empty queryset does not support the contract API
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getTweets', 'Failed on access to MongoDb  ------- ' + e.message)))
+
         response = []
-        response.append(one)
+        for q in queryset:
+            takeTweet = False
+            for vndTag in q.vendorTags:
+                if vndTag in patronTags:
+                    takeTweet = True
+            if takeTweet == False:
+                continue
+
+            one = {}
+            one['name'] = q.vendorName
+            one['address'] = q.vendorAddress
+            one['phone'] = q.vendorPhone
+            one['tweet'] = q.message
+            one['coordinates'] = {'latitude':q.vendorLocation.coordinates[1], 'longitude':q.vendorLocation.coordinates[0]}
+            response.append(one)
+
         return HttpResponse(json.dumps(self._makeReturn('OK', 'getTweets', response)))
 
     # DEBUG API
