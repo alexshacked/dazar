@@ -176,7 +176,7 @@
         for (var i = 0; i < neighbours.length; i++) {
             var vendor = neighbours[i].name
             var tweet = neighbours[i].tweet;
-            var one = vendor + ":   " + tweet;
+            var one = vendor + ":   " + tweet + '\n';
             res += one;
         }
         return res;
