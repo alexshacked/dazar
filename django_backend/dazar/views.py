@@ -24,6 +24,11 @@ class DazarAPI:
         self._doLog('DEBUG', 'registerVendor', request.body)
         body = json.loads(request.body)
 
+        # vendor needs to specify the market category of the business
+        tags = body['tags']
+        if 'all' in tags:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'registerVendor', 'need to specify the business sector: cafes, restaurants, clothing, ...')))
+
         # get coordinates for the business location
         formatted_address = self._makeGoogleAddress(body['address'])
         geocode = self._geocodeFromGoogle(formatted_address, "getCoordinates")
@@ -114,24 +119,26 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getTweets', 'Failed on access to MongoDb  ------- ' + e.message)))
 
-        response = []
-        for q in queryset:
-            takeTweet = False
-            for vndTag in q.vendorTags:
-                if vndTag in patronTags:
-                    takeTweet = True
-            if takeTweet == False:
-                continue
-
-            one = {}
-            one['name'] = q.vendorName
-            one['address'] = q.vendorAddress
-            one['phone'] = q.vendorPhone
-            one['tweet'] = q.message
-            one['coordinates'] = {'latitude':q.vendorLocation.coordinates[1], 'longitude':q.vendorLocation.coordinates[0]}
-            response.append(one)
-
+        response = [self._responseTweet(q) for q in queryset if not self._filterByTag(patronTags, q.vendorTags)]
         return HttpResponse(json.dumps(self._makeReturn('OK', 'getTweets', response)))
+
+    def _filterByTag(self, patronTags, vendorTags):
+        if 'all' in patronTags:
+            return False # do not filter
+        for vndTag in vendorTags:
+                if vndTag in patronTags:
+                    return False # one vendor tag corresponds to a tag that interests the patron - that's enough
+        return True # filter
+
+    def _responseTweet(self, oneFromMongo):
+        one = {}
+        one['name'] = oneFromMongo.vendorName
+        one['address'] = oneFromMongo.vendorAddress
+        one['phone'] = oneFromMongo.vendorPhone
+        one['tweet'] = oneFromMongo.message
+        one['coordinates'] = {'latitude':oneFromMongo.vendorLocation.coordinates[1], 'longitude':oneFromMongo.vendorLocation.coordinates[0]}
+
+        return one
 
     # DEBUG API
     def debugGetCoordinates(self, request):
