@@ -208,6 +208,8 @@ class DazarAPI:
     def debugTruncate(self, request):
         try:
             Locations.objects.all().delete()
+            Vendors.objects.all().delete()
+            Tweets.objects.all().delete()
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL', 'debugTruncate', 'Failed on access to MongoDb  ------- ' + e.message)))
         return HttpResponse(json.dumps(self._makeReturn('OK', 'debugTruncate', 'OK')))

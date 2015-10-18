@@ -47,7 +47,7 @@ class LoadTest:
             self.doLog('Beginning to work on street ' + street[0])
             for i in range(street[1], street[2]):
                 store = 'store ' + str(idx)
-                address = str(street[1]) + ' ' + str(i)
+                address = str(i) + ' ' + street[0]
                 telephone = str(123456789 + idx)
                 tags = ['cafes']
                 idx = idx + 1
