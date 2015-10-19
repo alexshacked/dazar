@@ -9,6 +9,7 @@ class LoadTest:
         self.REGISTER_URI = self.BASE_URI + 'registerVendor'
         self.ADD_URI = self.BASE_URI + 'addTweet'
         self.GET_URI = self.BASE_URI + 'getTweets'
+        self.TRUNCATE_URI = self.BASE_URI + 'truncate'
 
         self.log = open('./report.txt', 'w')
 
@@ -17,9 +18,15 @@ class LoadTest:
     def doLog(self, msg):
         now = datetime.datetime.now()
         strNow = str(now)
-        final = strNow + ':   ' + msg + '\n'
+        final = strNow + ':   ' + msg
         self.log.write(final)
         print final
+
+    def performance(self, street, start, end):
+        durationTotal = (end - start).seconds
+        durationOne = (durationTotal * 1000) / street[2]
+        msg = 'Processing street: %s took %d seconds. %d miliseconds per address\n' % (street[0], durationTotal, durationOne)
+        self.doLog(msg)
 
 
     def doRegisterVendor(self, vendor, address, phone, tags):
@@ -37,14 +44,26 @@ class LoadTest:
 
         return resp, js
 
-    def start(self):
-        streets = [('ibn gvirol, tel aviv', 1, 200), ('dizengoff, tel aviv', 1, 200), ('hayarkon, tel aviv', 1, 300),
-                    ('derech namir, tel aviv', 1, 200), ('alenby, tel aviv', 1, 130)]
+    def doTruncate(self):
+        req = urllib2.Request(url = self.TRUNCATE_URI)
+        fromWire = urllib2.urlopen(req).read()
 
-        self.doLog('Start registration')
+        resp = json.loads(fromWire)
+        return resp['status']
+
+    def start(self):
+        streets = [['ibn gvirol, tel aviv', 1, 200], ['dizengoff, tel aviv', 1, 200], ['hayarkon, tel aviv', 1, 300],
+                    ['derech namir, tel aviv', 1, 200], ['alenby, tel aviv', 1, 130]]
+
+        didTrunk = self.doTruncate()
+        self.doLog('Clean database: ' + didTrunk)
+
+        self.doLog('Start registration\n')
         idx = 1
         for street in streets:
-            self.doLog('Beginning to work on street ' + street[0])
+            start = datetime.datetime.now()
+            self.doLog('Beginning to work on street: ' + street[0])
+
             for i in range(street[1], street[2]):
                 store = 'store ' + str(idx)
                 address = str(i) + ' ' + street[0]
@@ -56,6 +75,9 @@ class LoadTest:
                     self.doLog(resp['info'])
                 else:
                     self.vendors.append(js)
+
+            end = datetime.datetime.now()
+            self.performance(street, start, end)
 
         self.doLog('End registration')
 

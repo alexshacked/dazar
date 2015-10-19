@@ -18,6 +18,9 @@ logger = logging.getLogger(__name__)
 class DazarAPI:
     def registerVendor(self, request):
         # ingest request
+        performanceMessage = ''
+        timeEnterFunc = datetime.datetime.now()
+
         invalid = self._validateRequest(request)
         if invalid is not None:
             return HttpResponse(json.dumps(self._makeReturn('FAIL', 'registerVendor', invalid)))
@@ -31,7 +34,15 @@ class DazarAPI:
 
         # get coordinates for the business location
         formatted_address = self._makeGoogleAddress(body['address'])
+
+        timeStartGoogle = datetime.datetime.now()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeStartGoogle)
+
         geocode = self._geocodeFromGoogle(formatted_address, "getCoordinates")
+
+        timeEndGoogle = datetime.datetime.now()
+        performanceMessage += self._logGather('geocode from google', timeStartGoogle, timeEndGoogle)
+
         if geocode['status'] == 'FAIL':
             return HttpResponse(json.dumps(geocode))
 
@@ -43,6 +54,9 @@ class DazarAPI:
         except Exception as e:
             pass; # this is good actually. means the object does not exist
 
+        timeMongoGet = datetime.datetime.now()
+        performanceMessage += self._logGather('mongo get', timeEndGoogle, timeMongoGet)
+
         # insert the new vendor in mongodb
         pt = Point(type = 'Point', coordinates = [float(geocode['data']['lng']), float(geocode['data']['lat'])] )
         now = datetime.datetime.now()
@@ -53,10 +67,20 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','registerVendor', 'Failed on access to MongoDb  ------- ' + e.message)))
 
+        timeMongoPut = datetime.datetime.now()
+        performanceMessage += self._logGather('mongo put', timeMongoGet, timeMongoPut)
+
         # respond
         response = {}
         response['vendorId'] = doc.id
-        return HttpResponse(json.dumps(self._makeReturn('OK', 'registerVendor', response)))
+        flat = json.dumps(self._makeReturn('OK', 'registerVendor', response))
+
+        timeMadeResponse = datetime.datetime.now()
+        performanceMessage += self._logGather('made response', timeMongoPut, timeMadeResponse)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeMadeResponse)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+        return HttpResponse(flat)
 
     def addTweet(self, request):
         # ingest request
@@ -280,11 +304,20 @@ class DazarAPI:
         else:
             return None
 
-    def _doLog(self, level, cmd, msg):
-        fullMsg = "Request: " + cmd + '\n' + msg
+    def _doLog(self, level, cmd, msg = None):
+        if msg is not None:
+            fullMsg = "Request: " + cmd + '\n' + msg
+        else:
+            fullMsg = cmd
 
         if level == 'DEBUG':
             logger.debug(fullMsg)
+
+    def _logGather(self, msg, start, end):
+        duration = (end - start).microseconds/1000
+        performance = 'start: %s end: %s -- delta: %d miliseconds' % (str(start), str(end), duration)
+        fullMsg = '\n' + msg + ': ' + performance
+        return fullMsg
 
 
 
