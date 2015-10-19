@@ -283,7 +283,7 @@ class DazarAPI:
             return self._makeReturn('FAIL', cmd, 'google maps api - method geocode() failed: ' + e.msg)
         jsonObject = json.loads(geocode)
         if jsonObject['status'] != 'OK':
-            return self._makeReturn('FAIL', cmd, 'google maps api - method geocode() failed')
+            return self._makeReturn('FAIL', cmd, 'google maps api - method geocode() failed:  ' + jsonObject['error_message'])
 
         coords = jsonObject['results'][0]['geometry']['location']
         return self._makeReturn('OK', cmd, coords)
