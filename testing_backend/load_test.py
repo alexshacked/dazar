@@ -25,7 +25,7 @@ class LoadTest:
     def performance(self, message, size, start, end):
         durationTotal = (end - start).seconds
         durationOne = (durationTotal * 1000) / size
-        msg = 'Processing %s: took %d seconds. %d miliseconds per unit\n' % (message, durationTotal, durationOne)
+        msg = 'Processing %s: took %d seconds. %d miliseconds per unit' % (message, durationTotal, durationOne)
         self.doLog(msg)
 
 
@@ -76,16 +76,14 @@ class LoadTest:
         return resp['status']
 
     def start(self):
-        '''
         streets = [['ibn gvirol, tel aviv', 1, 200], ['dizengoff, tel aviv', 1, 200], ['hayarkon, tel aviv', 1, 300],
                     ['derech namir, tel aviv', 1, 200], ['alenby, tel aviv', 1, 130]]
-        '''
-        streets = [['ibn gvirol, tel aviv', 1, 5], ['dizengoff, tel aviv', 1, 5]]
-        didTrunk = self.doTruncate()
-        self.doLog('Clean database: ' + didTrunk)
 
-        # registration
-        self.doLog('Start registration\n')
+        didTrunk = self.doTruncate()
+        self.doLog('Clean database: \n' + didTrunk)
+
+        # registerVendor
+        self.doLog('Start registration')
         idx = 1
         for street in streets:
             start = datetime.datetime.now()
@@ -106,10 +104,10 @@ class LoadTest:
             end = datetime.datetime.now()
             self.performance('street ' + street[0], street[2], start, end)
 
-        self.doLog('End registration')
+        self.doLog('End registration\n')
 
-        # tweet
-        self.doLog('Start tweeting\n')
+        # addTweet
+        self.doLog('Start tweeting')
         start = datetime.datetime.now()
         for vendor in self.vendors:
             resp = self.doTweet(vendor)
@@ -118,17 +116,23 @@ class LoadTest:
 
         end = datetime.datetime.now()
         self.performance('tweeting from all vendors', len(self.vendors), start, end)
+        self.doLog('End tweeting\n')
 
         # getTweets
-        self.doLog('Start querying tweets\n')
+        self.doLog('Start querying tweets')
         start = datetime.datetime.now()
+        radius = 300
         for vendor in self.vendors:
-            resp = self.doQueryTweets(vendor)
+            resp = self.doQueryTweets(vendor, radius)
             if resp['status'] == 'FAIL':
-                self.doLog(resp['info'])
+                self.doLog('getTweets failed:  ' + resp['info'])
+            else:
+                msg = 'getTweets for vendor <%s> at address <%s> found: %d tweets in a radius of %d meters' % (vendor['vendor'], vendor['address'], len(resp['data']), radius)
+                self.doLog(msg)
 
         end = datetime.datetime.now()
-        self.performance('tweeting from all vendors', len(self.vendors), start, end)
+        self.performance('getTweets from all vendors locations', len(self.vendors), start, end)
+        self.doLog('End querying tweets\n')
 
 
 
