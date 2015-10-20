@@ -22,10 +22,10 @@ class LoadTest:
         self.log.write(final)
         print final
 
-    def performance(self, street, start, end):
+    def performance(self, message, size, start, end):
         durationTotal = (end - start).seconds
-        durationOne = (durationTotal * 1000) / street[2]
-        msg = 'Processing street: %s took %d seconds. %d miliseconds per address\n' % (street[0], durationTotal, durationOne)
+        durationOne = (durationTotal * 1000) / size
+        msg = 'Processing %s: took %d seconds. %d miliseconds per unit\n' % (message, durationTotal, durationOne)
         self.doLog(msg)
 
 
@@ -41,8 +41,32 @@ class LoadTest:
         resp = json.loads(fromWire)
         if resp['status'] == 'OK':
             js['id'] = resp['data']['vendorId']
+            js['coordinates'] = resp['data']['coordinates']
 
         return resp, js
+
+    def doTweet(self, vendor):
+        js = {'vendorId': vendor['id'],
+              'tweet': vendor['vendor'] + ' is tweeting right now!'}
+        flat = json.dumps(js)
+        req = urllib2.Request(url = self.ADD_URI, data = flat)
+        fromWire = urllib2.urlopen(req).read()
+        resp = json.loads(fromWire)
+
+        return resp
+
+    def doQueryTweets(self, vendor, radius = 300):
+        js = {'latitude': vendor['coordinates']['latitude'],
+              'longitude': vendor['coordinates']['longitude'],
+              'radius': radius,
+              'tags': vendor['tags']}
+
+        flat = json.dumps(js)
+        req = urllib2.Request(url = self.GET_URI, data = flat)
+        fromWire = urllib2.urlopen(req).read()
+        resp = json.loads(fromWire)
+
+        return resp
 
     def doTruncate(self):
         req = urllib2.Request(url = self.TRUNCATE_URI)
@@ -52,12 +76,15 @@ class LoadTest:
         return resp['status']
 
     def start(self):
+        '''
         streets = [['ibn gvirol, tel aviv', 1, 200], ['dizengoff, tel aviv', 1, 200], ['hayarkon, tel aviv', 1, 300],
                     ['derech namir, tel aviv', 1, 200], ['alenby, tel aviv', 1, 130]]
-
+        '''
+        streets = [['ibn gvirol, tel aviv', 1, 5], ['dizengoff, tel aviv', 1, 5]]
         didTrunk = self.doTruncate()
         self.doLog('Clean database: ' + didTrunk)
 
+        # registration
         self.doLog('Start registration\n')
         idx = 1
         for street in streets:
@@ -77,12 +104,35 @@ class LoadTest:
                     self.vendors.append(js)
 
             end = datetime.datetime.now()
-            self.performance(street, start, end)
+            self.performance('street ' + street[0], street[2], start, end)
 
         self.doLog('End registration')
 
+        # tweet
+        self.doLog('Start tweeting\n')
+        start = datetime.datetime.now()
+        for vendor in self.vendors:
+            resp = self.doTweet(vendor)
+            if resp['status'] == 'FAIL':
+                self.doLog(resp['info'])
+
+        end = datetime.datetime.now()
+        self.performance('tweeting from all vendors', len(self.vendors), start, end)
+
+        # getTweets
+        self.doLog('Start querying tweets\n')
+        start = datetime.datetime.now()
+        for vendor in self.vendors:
+            resp = self.doQueryTweets(vendor)
+            if resp['status'] == 'FAIL':
+                self.doLog(resp['info'])
+
+        end = datetime.datetime.now()
+        self.performance('tweeting from all vendors', len(self.vendors), start, end)
 
 
 
+
+########################################### driver #################################################
 tester = LoadTest()
 tester.start()

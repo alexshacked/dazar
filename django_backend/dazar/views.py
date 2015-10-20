@@ -73,6 +73,9 @@ class DazarAPI:
         # respond
         response = {}
         response['vendorId'] = doc.id
+        response['coordinates'] = {}
+        response['coordinates']['latitude'] = float(geocode['data']['lat'])
+        response['coordinates']['longitude'] = float(geocode['data']['lng'])
         flat = json.dumps(self._makeReturn('OK', 'registerVendor', response))
 
         timeMadeResponse = datetime.datetime.now()
@@ -83,6 +86,9 @@ class DazarAPI:
         return HttpResponse(flat)
 
     def addTweet(self, request):
+        performanceMessage = ''
+        timeEnterFunc = datetime.datetime.now()
+
         # ingest request
         invalid = self._validateRequest(request)
         if invalid is not None:
@@ -90,11 +96,17 @@ class DazarAPI:
         self._doLog('DEBUG', 'addTweet', request.body)
         body = json.loads(request.body)
 
+        timeGetVendor = datetime.datetime.now()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetVendor)
+
         # get the vendor data from the vendors table in mongodb
         try:
             vendor = Vendors.objects.get(id = body['vendorId'])
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','addTweet', 'vendorId <' + body['vendorId'] + '> is not registered')))
+
+        timeGetTweet = datetime.datetime.now()
+        performanceMessage += self._logGather('get vendor data', timeGetVendor, timeGetTweet)
 
         # find out if this vendor creates a new tweet or updates an existing one
         newTweet = False
@@ -105,8 +117,11 @@ class DazarAPI:
                 return HttpResponse(json.dumps(self._makeReturn('FAIL','addTweet', 'mongodb is down')))
             newTweet = True
 
+        timeUpdateTweet = datetime.datetime.now()
+        performanceMessage += self._logGather('try to get (if exists) tweet data', timeGetTweet, timeUpdateTweet)
+
         # create or update the tweet
-        if newTweet == True:
+        if newTweet:
             now = datetime.datetime.now()
             try:
                 doc = Tweets.objects.create(message =body['tweet'], vendorId = body['vendorId'], vendorName = vendor.name, vendorAddress = vendor.address,
@@ -122,9 +137,22 @@ class DazarAPI:
             except Exception as e:
                 return HttpResponse(json.dumps(self._makeReturn('FAIL','addTweet', 'Failed on access to MongoDb  ------- ' + e.message)))
 
-        return HttpResponse(json.dumps(self._makeReturn('OK', 'addTweet', 'OK')))
+        timeMakeResponse = datetime.datetime.now()
+        performanceMessage += self._logGather('create (or update) tweet', timeUpdateTweet, timeMakeResponse)
+
+        flat = json.dumps(self._makeReturn('OK', 'addTweet', 'OK'))
+
+        timeExitFunc = datetime.datetime.now()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+        return HttpResponse(flat)
 
     def getTweets(self, request):
+        performanceMessage = ''
+        timeEnterFunc = datetime.datetime.now()
+
         invalid = self._validateRequest(request)
         if invalid is not None:
             return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getTweets', invalid)))
@@ -137,32 +165,27 @@ class DazarAPI:
         lng = float(body['longitude'])
         query = { 'vendorLocation': { '$near': {'$geometry': {'type':"Point", 'coordinates': [lng, lat]}, '$maxDistance': maxDistance } } }
 
+        timeQueryTweets = datetime.datetime.now()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeQueryTweets)
+
         try:
             queryset = Tweets.objects.raw_query(query)
             n = len(queryset) # probably a Django MongoDB Engine issue. Empty queryset does not support the contract API
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getTweets', 'Failed on access to MongoDb  ------- ' + e.message)))
 
+        timeMakeResponse = datetime.datetime.now()
+        performanceMessage += self._logGather('get tweets inside radius', timeQueryTweets, timeMakeResponse)
+
         response = [self._responseTweet(q) for q in queryset if not self._filterByTag(patronTags, q.vendorTags)]
-        return HttpResponse(json.dumps(self._makeReturn('OK', 'getTweets', response)))
+        flat = json.dumps(self._makeReturn('OK', 'getTweets', response))
 
-    def _filterByTag(self, patronTags, vendorTags):
-        if 'all' in patronTags:
-            return False # do not filter
-        for vndTag in vendorTags:
-                if vndTag in patronTags:
-                    return False # one vendor tag corresponds to a tag that interests the patron - that's enough
-        return True # filter
+        timeExitFunc = datetime.datetime.now()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
 
-    def _responseTweet(self, oneFromMongo):
-        one = {}
-        one['name'] = oneFromMongo.vendorName
-        one['address'] = oneFromMongo.vendorAddress
-        one['phone'] = oneFromMongo.vendorPhone
-        one['tweet'] = oneFromMongo.message
-        one['coordinates'] = {'latitude':oneFromMongo.vendorLocation.coordinates[1], 'longitude':oneFromMongo.vendorLocation.coordinates[0]}
-
-        return one
+        return HttpResponse(flat)
 
     # DEBUG API
     def debugGetCoordinates(self, request):
@@ -318,6 +341,24 @@ class DazarAPI:
         performance = 'start: %s end: %s -- delta: %d miliseconds' % (str(start), str(end), duration)
         fullMsg = '\n' + msg + ': ' + performance
         return fullMsg
+
+    def _filterByTag(self, patronTags, vendorTags):
+        if 'all' in patronTags:
+            return False # do not filter
+        for vndTag in vendorTags:
+                if vndTag in patronTags:
+                    return False # one vendor tag corresponds to a tag that interests the patron - that's enough
+        return True # filter
+
+    def _responseTweet(self, oneFromMongo):
+        one = {}
+        one['name'] = oneFromMongo.vendorName
+        one['address'] = oneFromMongo.vendorAddress
+        one['phone'] = oneFromMongo.vendorPhone
+        one['tweet'] = oneFromMongo.message
+        one['coordinates'] = {'latitude':oneFromMongo.vendorLocation.coordinates[1], 'longitude':oneFromMongo.vendorLocation.coordinates[0]}
+
+        return one
 
 
 
