@@ -187,6 +187,70 @@ class DazarAPI:
 
         return HttpResponse(flat)
 
+    def getVendor(self, request):
+        performanceMessage = ''
+        timeEnterFunc = datetime.datetime.now()
+
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getVendor', invalid)))
+        self._doLog('DEBUG', 'getVendor', request.body)
+        body = json.loads(request.body)
+        vendorId = body['vendorId']
+
+        timeGetVendor = datetime.datetime.now()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetVendor)
+
+        try:
+            vendor = Vendors.objects.get(id = vendorId)
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','getVendor', 'vendorId <' + body['vendorId'] + '> is not registered')))
+
+        timeMakeResponse = datetime.datetime.now()
+        performanceMessage += self._logGather('getVendor by id', timeGetVendor, timeMakeResponse)
+
+        response = self._responseVendor(vendor)
+        flat = json.dumps(self._makeReturn('OK', 'getVendor', response))
+
+        timeExitFunc = datetime.datetime.now()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+        return HttpResponse(flat)
+
+    def getAllVendors(self, request):
+        performanceMessage = ''
+        timeEnterFunc = datetime.datetime.now()
+
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getAllVendors', invalid)))
+        self._doLog('DEBUG', 'getAllVendors', request.body)
+        body = json.loads(request.body)
+
+        timeGetAllVendors = datetime.datetime.now()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetAllVendors)
+
+        try:
+            queryset = Vendors.objects.all()
+            n = len(queryset)
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','getAllVendors', 'Failed on access to MongoDb  ------- ' + e.message)))
+
+        timeMakeResponse = datetime.datetime.now()
+        performanceMessage += self._logGather('getAllVendors', timeGetAllVendors, timeMakeResponse)
+
+        response = self._responseAllVendors(queryset)
+        flat = json.dumps(self._makeReturn('OK', 'getAllVendors', response))
+
+        timeExitFunc = datetime.datetime.now()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+        return HttpResponse(flat)
+
     # DEBUG API
     def debugGetCoordinates(self, request):
         invalid = self._validateRequest(request)
@@ -359,6 +423,23 @@ class DazarAPI:
         one['coordinates'] = {'latitude':oneFromMongo.vendorLocation.coordinates[1], 'longitude':oneFromMongo.vendorLocation.coordinates[0]}
 
         return one
+
+    def _responseVendor(self, oneFromMongo):
+        one = {}
+        one['name'] = oneFromMongo.name
+        one['address'] = oneFromMongo.address
+        one['phone'] = oneFromMongo.phone
+        one['coordinates'] = {'latitude':oneFromMongo.location.coordinates[1], 'longitude':oneFromMongo.location.coordinates[0]}
+        one['tags'] = oneFromMongo.tags
+        one['registrationTime'] = str(oneFromMongo.registrationTime)
+        one['vendorId'] = oneFromMongo.id
+
+        return one
+
+    def _responseAllVendors(self, queryset):
+        res = map(self._responseVendor, queryset)
+        return res
+
 
 
 

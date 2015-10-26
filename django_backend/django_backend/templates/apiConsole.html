@@ -4,21 +4,23 @@
 <head>
     <meta charset="utf-8" />
     <title>Dazar API Console</title>
+    <style>
+        fieldset {
+            display: block;
+            margin-left: 2px;
+            margin-right: 2px;
+            padding-top: 0.0em;
+            padding-bottom: 0.0em;
+            padding-left: 0.75em;
+            padding-right: 0.75em;
+            border: 2px groove (internal value);
+        }
+    </style>
 </head>
 
 <body bgcolor="gray" onload="onInit()">
+
 <form action="" name="form1"></p>
-    <fieldset>
-    <p style="font-size:160%"><strong>Dazar Console - Web access to backend API for cellular apps</strong></p>
-    </fieldset>
-    &nbsp
-    <fieldset>
-    <p>
-        Server Domain:
-        <input type="text" name="txtUri" size="10" maxlength="10" readonly style="background-color:LightGray;border-color:LightGray;font-size:100%"/>
-    </p>
-    </fieldset>
-    &nbsp
     <fieldset>
     <p>
         <input type="button" name="buttonRegister" style="color: black; background-color: GreenYellow" value="Register vendor" />
@@ -45,7 +47,17 @@
         <input type="checkbox" name="boxRegSports" value=1 > Sports
     </p>
     </fieldset>
-    &nbsp
+    <!--&nbsp><-->
+    <fieldset>
+    <p>
+        <input type="button" name="buttonGetVendor" style="color: black; background-color: GreenYellow" value="Get vendor" />
+        Vendor Id:
+        <input type="text" name="txtGetVendorId" size="30" maxlength="30" style="background-color:Azure;border-color:Azure"/>
+        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+        <input type="button" name="buttonGetAllVendors" style="color: black; background-color: GreenYellow" value="Get all vendors" />
+    </p>
+    </fieldset>
+    <!--&nbsp><-->
     <fieldset>
     <p>
         <input type="button" name="buttonAddTweet" style="color: black; background-color: GreenYellow" value="Add tweet" />
@@ -55,7 +67,7 @@
         <input type="text" name="txtTweet" size="90" maxlength="90" style="background-color:Azure;border-color:Azure"/>
     </p>
     </fieldset>
-    &nbsp
+    <!--&nbsp><-->
     <fieldset>
     <p>
         <input type="button" name="buttonGetTweets" style="color: black; background-color: GreenYellow" value="Get tweets" />
@@ -81,7 +93,7 @@
         <input type="checkbox" name="boxGetSports" value=1 > Sports
      </p>
      </fieldset>
-     &nbsp
+     <!--&nbsp><-->
      <fieldset>
      <p>
         <input type="button" name="buttonAddrs2Coords" style="color: black; background-color: PaleTurquoise" value="From Address to Coordinates" />
@@ -94,11 +106,12 @@
     &nbsp
     <fieldset>
     <p>
+        Server Domain: <input type="text" name="txtUri" size="10" maxlength="10" readonly style="background-color:LightGray;border-color:LightGray;font-size:100%"/>
         <pre>Messages:                                                   Output:</pre>
     </p>
     <p>
-        <textarea rows="15" cols="55"  style="color: black; background-color: lightyellow; font-size:95%" name="messages"></textarea>
-        <textarea rows="15" cols="55"  style="color: black; background-color: lightyellow; font-size:95%" name="output"></textarea>
+        <textarea rows="12" cols="55"  style="color: black; background-color: lightyellow; font-size:95%" name="messages"></textarea>
+        <textarea rows="12" cols="55"  style="color: black; background-color: lightyellow; font-size:95%" name="output"></textarea>
     </p>
     </fieldset>
 </form>
@@ -108,10 +121,14 @@
     var buttonAddTweet = document.form1.buttonAddTweet;
     var buttonGetTweets = document.form1.buttonGetTweets;
     var buttonGetCoordinates = document.form1.buttonAddrs2Coords;
+    var buttonGetVendor = document.form1.buttonGetVendor;
+    var buttonGetAllVendors = document.form1.buttonGetAllVendors;
     var cmdRegister = '/registerVendor';
     var cmdAddTweet = '/addTweet';
     var cmdGetTweets = '/getTweets';
     var cmdGetCoordinates = '/getCoordinates';
+    var cmdGetVendor = '/getVendor';
+    var cmdGetAllVendors = '/getAllVendors';
 
     var catAll = "all";
     var catRestaurants = "restaurants";
@@ -155,6 +172,12 @@
         else if (obj.command == 'getCoordinates') {
             return parseResponseGetCoordinates(obj);
         }
+        else if (obj.command == 'getVendor') {
+            return parseResponseGetVendor(obj);
+        }
+        else if (obj.command == 'getAllVendors') {
+            return parseResponseGetAllVendors(obj);
+        }
         else {
            return  parseResponseUnknown(obj)
         }
@@ -187,6 +210,45 @@
         var longitude = obj.data.lng;
         res = 'latitude: ' + latitude + '\n' + 'longitude: ' + longitude + '\n';
         return res
+    }
+
+    function parseVendorData(data) {
+        var vendorId = data.vendorId;
+        var name = data.name;
+        var address = data.address;
+        var phone = data.phone;
+        var tags = data.tags;
+        var registrationTime = data.registrationTime;
+        var latitude = data.coordinates.latitude;
+        var longitude = data.coordinates.longitude;
+
+        var tagsStr = tags.toString();
+
+        res =
+        'id: ' + vendorId
+        + '---name: ' + name
+        + '---address: ' + address
+        + '---phone: ' + phone
+        + '---tags: ' + tagsStr
+        + '---registrationTime: ' + registrationTime
+        + '---latitude: ' + latitude
+        + '---longitude: ' + longitude
+        + '\n';
+        return res;
+    }
+
+    function parseResponseGetVendor(obj) {
+        return parseVendorData(obj.data);
+    }
+
+    function parseResponseGetAllVendors(obj) {
+        var vendors = obj.data;
+        var res = '';
+        for (i in vendors) {
+            res += parseVendorData(vendors[i])
+            res += '\n'
+        }
+        return res;
     }
 
     function parseResponseUnknown(obj) {
@@ -389,6 +451,31 @@
         sendMsg(uri, flat);
     }
 
+    function OnGetVendor() {
+        cleanDisplay();
+
+        var uri = document.form1.txtUri.value + cmdGetVendor;
+        var vendorId = document.form1.txtGetVendorId.value;
+
+        var body = {};
+        body.vendorId = vendorId;
+        var flat = JSON.stringify(body, null, 2);
+
+        showRequest(uri, flat);
+        sendMsg(uri, flat);
+    }
+
+    function OnGetAllVendors() {
+        cleanDisplay();
+
+        var uri = document.form1.txtUri.value + cmdGetAllVendors;
+
+        var body = {};
+        var flat = JSON.stringify(body, null, 2);
+
+        showRequest(uri, flat);
+        sendMsg(uri, flat);
+    }
 
     function onInit() {
         document.form1.txtUri.value = window.location.host;
@@ -398,6 +485,8 @@
     buttonAddTweet.addEventListener("click", OnAddTweet);
     buttonGetTweets.addEventListener("click", OnGetTweets);
     buttonGetCoordinates.addEventListener("click", OnGetCoordinates);
+    buttonGetVendor.addEventListener("click", OnGetVendor);
+    buttonGetAllVendors.addEventListener("click", OnGetAllVendors);
 
 </script>
 
