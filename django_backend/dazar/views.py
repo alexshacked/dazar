@@ -126,13 +126,14 @@ class DazarAPI:
             try:
                 doc = Tweets.objects.create(message =body['tweet'], vendorId = body['vendorId'], vendorName = vendor.name, vendorAddress = vendor.address,
                                          vendorPhone = vendor.phone, vendorTags = vendor.tags, vendorLocation = vendor.location,
-                                         creationTime = now)
+                                         creationTime = now, votes = 0)
                 doc.save()
             except Exception as e:
                 return HttpResponse(json.dumps(self._makeReturn('FAIL','addTweet', 'Failed on access to MongoDb  ------- ' + e.message)))
         else: # update
             try:
                 tweet.message = body['tweet']
+                tweet.votes = 0
                 tweet.save()
             except Exception as e:
                 return HttpResponse(json.dumps(self._makeReturn('FAIL','addTweet', 'Failed on access to MongoDb  ------- ' + e.message)))
@@ -179,6 +180,69 @@ class DazarAPI:
 
         response = [self._responseTweet(q) for q in queryset if not self._filterByTag(patronTags, q.vendorTags)]
         flat = json.dumps(self._makeReturn('OK', 'getTweets', response))
+
+        timeExitFunc = datetime.datetime.now()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+        return HttpResponse(flat)
+
+    def getVendorTweet(self, request):
+        performanceMessage = ''
+        timeEnterFunc = datetime.datetime.now()
+
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getVendorTweet', invalid)))
+        self._doLog('DEBUG', 'getVendorTwet', request.body)
+        body = json.loads(request.body)
+        vendorId = body['vendorId']
+
+        timeGetVendorTweet = datetime.datetime.now()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetVendorTweet)
+
+        try:
+            tweet = Tweets.objects.get(vendorId = vendorId)
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','getVendorTweet', 'tweet for vendorId <' + vendorId + '> was not found.')))
+
+        timeMakeResponse = datetime.datetime.now()
+        performanceMessage += self._logGather('getVendorTweet', timeGetVendorTweet, timeMakeResponse)
+
+        response = self._responseTweet(tweet)
+        flat = json.dumps(self._makeReturn('OK', 'getVendorTweet', response))
+
+        timeExitFunc = datetime.datetime.now()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+        return HttpResponse(flat)
+
+    def getAllVendorTweets(self, request):
+        performanceMessage = ''
+        timeEnterFunc = datetime.datetime.now()
+
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getAllVendorTweets', invalid)))
+        self._doLog('DEBUG', 'getAllVendorTweets', request.body)
+
+        timeGetAllVendorTweets = datetime.datetime.now()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetAllVendorTweets)
+
+        try:
+            queryset = Tweets.objects.all()
+            n = len(queryset)
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','timeGetAllVendorTweets', 'Failed on access to MongoDb  ------- ' + e.message)))
+
+        timeMakeResponse = datetime.datetime.now()
+        performanceMessage += self._logGather('getAllVendorTweets', timeGetAllVendorTweets, timeMakeResponse)
+
+        response = self._responseAllTweets(queryset)
+        flat = json.dumps(self._makeReturn('OK', 'getAllVendorTweets', response))
 
         timeExitFunc = datetime.datetime.now()
         performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
@@ -416,13 +480,22 @@ class DazarAPI:
 
     def _responseTweet(self, oneFromMongo):
         one = {}
+        one['vendorId'] = oneFromMongo.vendorId
         one['name'] = oneFromMongo.vendorName
         one['address'] = oneFromMongo.vendorAddress
         one['phone'] = oneFromMongo.vendorPhone
+        one['tags'] = oneFromMongo.vendorTags
         one['tweet'] = oneFromMongo.message
         one['coordinates'] = {'latitude':oneFromMongo.vendorLocation.coordinates[1], 'longitude':oneFromMongo.vendorLocation.coordinates[0]}
+        one['creationTime'] = str(oneFromMongo.creationTime)
+        if hasattr(oneFromMongo, 'votes'):
+            one['votes'] = oneFromMongo.votes
 
         return one
+
+    def _responseAllTweets(self, queryset):
+        res = map(self._responseTweet, queryset)
+        return res
 
     def _responseVendor(self, oneFromMongo):
         one = {}

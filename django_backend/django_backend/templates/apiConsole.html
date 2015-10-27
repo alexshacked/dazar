@@ -93,6 +93,16 @@
         <input type="checkbox" name="boxGetSports" value=1 > Sports
      </p>
      </fieldset>
+    <!--&nbsp><-->
+    <fieldset>
+    <p>
+        <input type="button" name="buttonGetVendorTweet" style="color: black; background-color: GreenYellow" value="Get vendor tweet" />
+        Vendor Id:
+        <input type="text" name="txtGetVendorTweetId" size="30" maxlength="30" style="background-color:Azure;border-color:Azure"/>
+        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+        <input type="button" name="buttonGetAllTweets" style="color: black; background-color: GreenYellow" value="Get all tweets" />
+    </p>
+    </fieldset>
      <!--&nbsp><-->
      <fieldset>
      <p>
@@ -123,12 +133,16 @@
     var buttonGetCoordinates = document.form1.buttonAddrs2Coords;
     var buttonGetVendor = document.form1.buttonGetVendor;
     var buttonGetAllVendors = document.form1.buttonGetAllVendors;
+    var buttonGetVendorTweet = document.form1.buttonGetVendorTweet;
+    var buttonGetAllTweets = document.form1.buttonGetAllTweets;
     var cmdRegister = '/registerVendor';
     var cmdAddTweet = '/addTweet';
     var cmdGetTweets = '/getTweets';
     var cmdGetCoordinates = '/getCoordinates';
     var cmdGetVendor = '/getVendor';
     var cmdGetAllVendors = '/getAllVendors';
+    var cmdGetVendorTweet = '/getVendorTweet';
+    var cmdGetAllVendorTweets = '/getAllVendorTweets';
 
     var catAll = "all";
     var catRestaurants = "restaurants";
@@ -178,6 +192,12 @@
         else if (obj.command == 'getAllVendors') {
             return parseResponseGetAllVendors(obj);
         }
+        else if (obj.command == 'getVendorTweet') {
+            return parseResponseGetVendorTweet(obj);
+        }
+        else if (obj.command == 'getAllVendorTweets') {
+            return parseResponseGetAllTweets(obj);
+        }
         else {
            return  parseResponseUnknown(obj)
         }
@@ -199,7 +219,11 @@
         for (var i = 0; i < neighbours.length; i++) {
             var vendor = neighbours[i].name
             var tweet = neighbours[i].tweet;
-            var one = vendor + ":   " + tweet + '\n';
+            var votes = "0"
+            if (neighbours[i].votes != "") {
+                votes = neighbours[i].votes;
+            }
+            var one = vendor + ":   " + tweet + ",  votes: " + votes + "\n";
             res += one;
         }
         return res;
@@ -237,6 +261,38 @@
         return res;
     }
 
+    function parseTweetData(data) {
+        var tweet = data.tweet
+        var name = data.name;
+        var vendorId = data.vendorId;
+        var address = data.address;
+        var phone = data.phone;
+        var tags = data.tags;
+        var creationTime = data.creationTime;
+        var latitude = data.coordinates.latitude;
+        var longitude = data.coordinates.longitude;
+        var votes = "0"
+        if (data.votes != "") {
+            votes = data.votes;
+        }
+
+        var tagsStr = tags.toString();
+
+        res =
+        'vendorId: ' + vendorId
+        + '---name: ' + name
+        + '---tweet: ' + tweet
+        + '---address: ' + address
+        + '---phone: ' + phone
+        + '---tags: ' + tagsStr
+        + '---creationTime: ' + creationTime
+        + '---latitude: ' + latitude
+        + '---longitude: ' + longitude
+        + '---votes: ' + votes
+        + '\n';
+        return res;
+    }
+
     function parseResponseGetVendor(obj) {
         return parseVendorData(obj.data);
     }
@@ -246,6 +302,20 @@
         var res = '';
         for (i in vendors) {
             res += parseVendorData(vendors[i])
+            res += '\n'
+        }
+        return res;
+    }
+
+    function parseResponseGetVendorTweet(obj) {
+        return parseTweetData(obj.data);
+    }
+
+    function parseResponseGetAllTweets(obj) {
+        var tweets = obj.data;
+        var res = '';
+        for (i in tweets) {
+            res += parseTweetData(tweets[i])
             res += '\n'
         }
         return res;
@@ -477,6 +547,33 @@
         sendMsg(uri, flat);
     }
 
+    function OnGetVendorTweet() {
+        cleanDisplay();
+
+        var uri = document.form1.txtUri.value + cmdGetVendorTweet;
+        var vendorId = document.form1.txtGetVendorTweetId.value;
+
+        var body = {};
+        body.vendorId = vendorId;
+        var flat = JSON.stringify(body, null, 2);
+
+        showRequest(uri, flat);
+        sendMsg(uri, flat);
+    }
+
+    function OnGetAllVendorTweets() {
+        cleanDisplay();
+
+        var uri = document.form1.txtUri.value + cmdGetAllVendorTweets;
+
+        var body = {};
+        var flat = JSON.stringify(body, null, 2);
+
+        showRequest(uri, flat);
+        sendMsg(uri, flat);
+    }
+
+
     function onInit() {
         document.form1.txtUri.value = window.location.host;
     }
@@ -487,6 +584,8 @@
     buttonGetCoordinates.addEventListener("click", OnGetCoordinates);
     buttonGetVendor.addEventListener("click", OnGetVendor);
     buttonGetAllVendors.addEventListener("click", OnGetAllVendors);
+    buttonGetVendorTweet.addEventListener("click", OnGetVendorTweet);
+    buttonGetAllTweets.addEventListener("click", OnGetAllVendorTweets);
 
 </script>
 

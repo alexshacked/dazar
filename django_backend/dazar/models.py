@@ -25,6 +25,7 @@ class Tweets(models.Model):
     vendorTags= ListField()
     vendorLocation = EmbeddedModelField('Point')
     creationTime = models.DateTimeField()
+    votes = models.CharField(max_length=200)
     objects = MongoDBManager()
 
 class Locations(models.Model):
