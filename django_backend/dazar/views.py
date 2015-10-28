@@ -336,23 +336,16 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','upvote', 'vendorId <' + vendorId + '> is not registered')))
 
-        timeGetTweet = datetime.datetime.now()
-        performanceMessage += self._logGather('check that vendor exists', timeGetVendor, timeGetTweet)
+        timeUpdateTweet = datetime.datetime.now()
+        performanceMessage += self._logGather('check that vendor exists', timeGetVendor, timeUpdateTweet)
 
         # get the tweet from mongo
         try:
-            tweet = Tweets.objects.get(vendorId = vendorId)
+            filter = {'vendorId': vendorId}
+            doc = {"$inc": {"votes": 1}}
+            tweet = Tweets.objects.raw_update(filter, doc)
         except Exception as e:
                 return HttpResponse(json.dumps(self._makeReturn('FAIL','upvote', 'failed fetching the tweet:  ' + e.message)))
-
-        timeUpdateTweet = datetime.datetime.now()
-        performanceMessage += self._logGather('get tweet', timeGetTweet, timeUpdateTweet)
-
-        try:
-            tweet.votes +=1
-            tweet.save()
-        except Exception as e:
-            return HttpResponse(json.dumps(self._makeReturn('FAIL','upvote', 'Failed on access to MongoDb  ------- ' + e.message)))
 
         timeMakeResponse = datetime.datetime.now()
         performanceMessage += self._logGather('update tweet', timeUpdateTweet, timeMakeResponse)
@@ -387,23 +380,16 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','downvote', 'vendorId <' + vendorId + '> is not registered')))
 
-        timeGetTweet = datetime.datetime.now()
-        performanceMessage += self._logGather('check that vendor exists', timeGetVendor, timeGetTweet)
+        timeUpdateTweet = datetime.datetime.now()
+        performanceMessage += self._logGather('check that vendor exists', timeGetVendor, timeUpdateTweet)
 
         # get the tweet from mongo
         try:
-            tweet = Tweets.objects.get(vendorId = vendorId)
+            filter = {'vendorId': vendorId}
+            doc = {"$inc": {"votes": -1}}
+            tweet = Tweets.objects.raw_update(filter, doc)
         except Exception as e:
-                return HttpResponse(json.dumps(self._makeReturn('FAIL','downvote', 'failed fetching the tweet:  ' + e.message)))
-
-        timeUpdateTweet = datetime.datetime.now()
-        performanceMessage += self._logGather('get tweet', timeGetTweet, timeUpdateTweet)
-
-        try:
-            tweet.votes -= 1
-            tweet.save()
-        except Exception as e:
-            return HttpResponse(json.dumps(self._makeReturn('FAIL','downvote', 'Failed on access to MongoDb  ------- ' + e.message)))
+                return HttpResponse(json.dumps(self._makeReturn('FAIL','upvote', 'failed fetching the tweet:  ' + e.message)))
 
         timeMakeResponse = datetime.datetime.now()
         performanceMessage += self._logGather('update tweet', timeUpdateTweet, timeMakeResponse)
