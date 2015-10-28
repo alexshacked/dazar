@@ -243,10 +243,8 @@
         for (var i = 0; i < neighbours.length; i++) {
             var vendor = neighbours[i].name
             var tweet = neighbours[i].tweet;
-            var votes = "0"
-            if (neighbours[i].votes != "") {
-                votes = neighbours[i].votes;
-            }
+            var votes = neighbours[i].votes;
+
             var one = vendor + ":   " + tweet + ",  votes: " + votes + "\n";
             res += one;
         }
@@ -295,10 +293,7 @@
         var creationTime = data.creationTime;
         var latitude = data.coordinates.latitude;
         var longitude = data.coordinates.longitude;
-        var votes = "0"
-        if (data.votes != "") {
-            votes = data.votes;
-        }
+        var votes = data.votes;
 
         var tagsStr = tags.toString();
 

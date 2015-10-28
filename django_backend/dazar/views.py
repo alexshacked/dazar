@@ -349,12 +349,7 @@ class DazarAPI:
         performanceMessage += self._logGather('get tweet', timeGetTweet, timeUpdateTweet)
 
         try:
-            if len(tweet.votes) == 0:
-                votes = 0
-            else:
-                votes = int(tweet.votes)
-            votes += 1
-            tweet.votes = str(votes)
+            tweet.votes +=1
             tweet.save()
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','upvote', 'Failed on access to MongoDb  ------- ' + e.message)))
@@ -405,12 +400,7 @@ class DazarAPI:
         performanceMessage += self._logGather('get tweet', timeGetTweet, timeUpdateTweet)
 
         try:
-            if len(tweet.votes) == 0:
-                votes = 0
-            else:
-                votes = int(tweet.votes)
-            votes -= 1
-            tweet.votes = str(votes)
+            tweet.votes -= 1
             tweet.save()
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','downvote', 'Failed on access to MongoDb  ------- ' + e.message)))
@@ -600,8 +590,7 @@ class DazarAPI:
         one['tweet'] = oneFromMongo.message
         one['coordinates'] = {'latitude':oneFromMongo.vendorLocation.coordinates[1], 'longitude':oneFromMongo.vendorLocation.coordinates[0]}
         one['creationTime'] = str(oneFromMongo.creationTime)
-        if hasattr(oneFromMongo, 'votes'):
-            one['votes'] = oneFromMongo.votes
+        one['votes'] = oneFromMongo.votes
 
         return one
 
