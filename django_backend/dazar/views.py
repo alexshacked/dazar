@@ -315,6 +315,118 @@ class DazarAPI:
 
         return HttpResponse(flat)
 
+    def upvote(self, request):
+        performanceMessage = ''
+        timeEnterFunc = datetime.datetime.now()
+
+        # ingest request
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'upvote', invalid)))
+        self._doLog('DEBUG', 'upvote', request.body)
+        body = json.loads(request.body)
+        vendorId = body['vendorId']
+
+        timeGetVendor = datetime.datetime.now()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetVendor)
+
+        # get the vendor data from the vendors table in mongodb
+        try:
+            vendor = Vendors.objects.get(id = vendorId)
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','upvote', 'vendorId <' + vendorId + '> is not registered')))
+
+        timeGetTweet = datetime.datetime.now()
+        performanceMessage += self._logGather('check that vendor exists', timeGetVendor, timeGetTweet)
+
+        # get the tweet from mongo
+        try:
+            tweet = Tweets.objects.get(vendorId = vendorId)
+        except Exception as e:
+                return HttpResponse(json.dumps(self._makeReturn('FAIL','upvote', 'failed fetching the tweet:  ' + e.message)))
+
+        timeUpdateTweet = datetime.datetime.now()
+        performanceMessage += self._logGather('get tweet', timeGetTweet, timeUpdateTweet)
+
+        try:
+            if len(tweet.votes) == 0:
+                votes = 0
+            else:
+                votes = int(tweet.votes)
+            votes += 1
+            tweet.votes = str(votes)
+            tweet.save()
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','upvote', 'Failed on access to MongoDb  ------- ' + e.message)))
+
+        timeMakeResponse = datetime.datetime.now()
+        performanceMessage += self._logGather('update tweet', timeUpdateTweet, timeMakeResponse)
+
+        flat = json.dumps(self._makeReturn('OK', 'upvote', 'OK'))
+
+        timeExitFunc = datetime.datetime.now()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+        return HttpResponse(flat)
+
+    def downvote(self, request):
+        performanceMessage = ''
+        timeEnterFunc = datetime.datetime.now()
+
+        # ingest request
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'downvote', invalid)))
+        self._doLog('DEBUG', 'downvote', request.body)
+        body = json.loads(request.body)
+        vendorId = body['vendorId']
+
+        timeGetVendor = datetime.datetime.now()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetVendor)
+
+        # get the vendor data from the vendors table in mongodb
+        try:
+            vendor = Vendors.objects.get(id = vendorId)
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','downvote', 'vendorId <' + vendorId + '> is not registered')))
+
+        timeGetTweet = datetime.datetime.now()
+        performanceMessage += self._logGather('check that vendor exists', timeGetVendor, timeGetTweet)
+
+        # get the tweet from mongo
+        try:
+            tweet = Tweets.objects.get(vendorId = vendorId)
+        except Exception as e:
+                return HttpResponse(json.dumps(self._makeReturn('FAIL','downvote', 'failed fetching the tweet:  ' + e.message)))
+
+        timeUpdateTweet = datetime.datetime.now()
+        performanceMessage += self._logGather('get tweet', timeGetTweet, timeUpdateTweet)
+
+        try:
+            if len(tweet.votes) == 0:
+                votes = 0
+            else:
+                votes = int(tweet.votes)
+            votes -= 1
+            tweet.votes = str(votes)
+            tweet.save()
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','downvote', 'Failed on access to MongoDb  ------- ' + e.message)))
+
+        timeMakeResponse = datetime.datetime.now()
+        performanceMessage += self._logGather('update tweet', timeUpdateTweet, timeMakeResponse)
+
+        flat = json.dumps(self._makeReturn('OK', 'downvote', 'OK'))
+
+        timeExitFunc = datetime.datetime.now()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+        return HttpResponse(flat)
+
     # DEBUG API
     def debugGetCoordinates(self, request):
         invalid = self._validateRequest(request)

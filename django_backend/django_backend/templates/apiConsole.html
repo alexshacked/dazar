@@ -100,6 +100,10 @@
         Vendor Id:
         <input type="text" name="txtGetVendorTweetId" size="30" maxlength="30" style="background-color:Azure;border-color:Azure"/>
         &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+        <input type="button" name="buttonUpvote" style="color: black; background-color: GreenYellow" value="Upvote" />
+        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+        <input type="button" name="buttonDownvote" style="color: black; background-color: GreenYellow" value="Downvote" />
+        &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
         <input type="button" name="buttonGetAllTweets" style="color: black; background-color: GreenYellow" value="Get all tweets" />
     </p>
     </fieldset>
@@ -135,6 +139,8 @@
     var buttonGetAllVendors = document.form1.buttonGetAllVendors;
     var buttonGetVendorTweet = document.form1.buttonGetVendorTweet;
     var buttonGetAllTweets = document.form1.buttonGetAllTweets;
+    var buttonUpvote = document.form1.buttonUpvote;
+    var buttonDownvote = document.form1.buttonDownvote;
     var cmdRegister = '/registerVendor';
     var cmdAddTweet = '/addTweet';
     var cmdGetTweets = '/getTweets';
@@ -143,6 +149,8 @@
     var cmdGetAllVendors = '/getAllVendors';
     var cmdGetVendorTweet = '/getVendorTweet';
     var cmdGetAllVendorTweets = '/getAllVendorTweets';
+    var cmdUpvote = '/upvote'
+    var cmdDownvote = '/downvote'
 
     var catAll = "all";
     var catRestaurants = "restaurants";
@@ -198,9 +206,25 @@
         else if (obj.command == 'getAllVendorTweets') {
             return parseResponseGetAllTweets(obj);
         }
+        else if (obj.command == 'upvote') {
+            return parseResponseUpvote(obj);
+        }
+         else if (obj.command == 'downvote') {
+            return parseResponseDownvote(obj);
+        }
         else {
            return  parseResponseUnknown(obj)
         }
+    }
+
+    function parseResponseDownvote(obj) {
+        var result = obj.data;
+        return 'result: ' + result;
+    }
+
+    function parseResponseUpvote(obj) {
+        var result = obj.data;
+        return 'result: ' + result;
     }
 
     function parseResponseRegisterVendor(obj) {
@@ -573,6 +597,33 @@
         sendMsg(uri, flat);
     }
 
+    function OnUpvote() {
+        cleanDisplay();
+
+        var uri = document.form1.txtUri.value + cmdUpvote;
+        var vendorId = document.form1.txtGetVendorTweetId.value;
+
+        var body = {};
+        body.vendorId = vendorId;
+        var flat = JSON.stringify(body, null, 2);
+
+        showRequest(uri, flat);
+        sendMsg(uri, flat);
+    }
+
+    function OnDownvote() {
+        cleanDisplay();
+
+        var uri = document.form1.txtUri.value + cmdDownvote;
+        var vendorId = document.form1.txtGetVendorTweetId.value;
+
+        var body = {};
+        body.vendorId = vendorId;
+        var flat = JSON.stringify(body, null, 2);
+
+        showRequest(uri, flat);
+        sendMsg(uri, flat);
+    }
 
     function onInit() {
         document.form1.txtUri.value = window.location.host;
@@ -586,6 +637,8 @@
     buttonGetAllVendors.addEventListener("click", OnGetAllVendors);
     buttonGetVendorTweet.addEventListener("click", OnGetVendorTweet);
     buttonGetAllTweets.addEventListener("click", OnGetAllVendorTweets);
+    buttonUpvote.addEventListener("click", OnUpvote);
+    buttonDownvote.addEventListener("click", OnDownvote);
 
 </script>
 
