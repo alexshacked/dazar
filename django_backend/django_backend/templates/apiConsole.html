@@ -319,7 +319,7 @@
     function parseResponseGetAllVendors(obj) {
         var vendors = obj.data;
         var res = '';
-        for (var i in vendors) {
+        for (var i = 0; i < vendors.length; i++) {
             res += parseVendorData(vendors[i])
             res += '\n'
         }
@@ -333,7 +333,7 @@
     function parseResponseGetAllTweets(obj) {
         var tweets = obj.data;
         var res = '';
-        for (var i in tweets) {
+        for (var i = 0; i <tweets.length i++) {
             res += parseTweetData(tweets[i])
             res += '\n'
         }
