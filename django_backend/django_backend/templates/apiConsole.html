@@ -333,7 +333,7 @@
     function parseResponseGetAllTweets(obj) {
         var tweets = obj.data;
         var res = '';
-        for (var i = 0; i <tweets.length i++) {
+        for (var i = 0; i <tweets.length; i++) {
             res += parseTweetData(tweets[i])
             res += '\n'
         }
