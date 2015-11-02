@@ -319,7 +319,7 @@
     function parseResponseGetAllVendors(obj) {
         var vendors = obj.data;
         var res = '';
-        for (i in vendors) {
+        for (var i in vendors) {
             res += parseVendorData(vendors[i])
             res += '\n'
         }
@@ -333,7 +333,7 @@
     function parseResponseGetAllTweets(obj) {
         var tweets = obj.data;
         var res = '';
-        for (i in tweets) {
+        for (var i in tweets) {
             res += parseTweetData(tweets[i])
             res += '\n'
         }
@@ -354,7 +354,7 @@
         top = document.form1.output.offsetTop;
         var outputArea = document.form1.output;
         if(outputArea.selectionStart == outputArea.selectionEnd) {
-                moutputArea.scrollTop = outputArea.scrollHeight;
+                outputArea.scrollTop = outputArea.scrollHeight;
         }
     }
 
