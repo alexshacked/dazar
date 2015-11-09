@@ -1,0 +1,512 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0568296B1BEF923A001F1B22 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568296A1BEF923A001F1B22 /* AppDelegate.swift */; };
+		0568296D1BEF923A001F1B22 /* FirstViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568296C1BEF923A001F1B22 /* FirstViewController.swift */; };
+		0568296F1BEF923A001F1B22 /* SecondViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568296E1BEF923A001F1B22 /* SecondViewController.swift */; };
+		056829721BEF923A001F1B22 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 056829701BEF923A001F1B22 /* Main.storyboard */; };
+		056829741BEF923A001F1B22 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 056829731BEF923A001F1B22 /* Assets.xcassets */; };
+		056829771BEF923A001F1B22 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 056829751BEF923A001F1B22 /* LaunchScreen.storyboard */; };
+		056829821BEF923A001F1B22 /* DazarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 056829811BEF923A001F1B22 /* DazarTests.swift */; };
+		0568298D1BEF923A001F1B22 /* DazarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568298C1BEF923A001F1B22 /* DazarUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0568297E1BEF923A001F1B22 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0568295F1BEF923A001F1B22 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 056829661BEF923A001F1B22;
+			remoteInfo = Dazar;
+		};
+		056829891BEF923A001F1B22 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0568295F1BEF923A001F1B22 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 056829661BEF923A001F1B22;
+			remoteInfo = Dazar;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		056829671BEF923A001F1B22 /* Dazar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dazar.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0568296A1BEF923A001F1B22 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		0568296C1BEF923A001F1B22 /* FirstViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstViewController.swift; sourceTree = "<group>"; };
+		0568296E1BEF923A001F1B22 /* SecondViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondViewController.swift; sourceTree = "<group>"; };
+		056829711BEF923A001F1B22 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		056829731BEF923A001F1B22 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		056829761BEF923A001F1B22 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		056829781BEF923A001F1B22 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0568297D1BEF923A001F1B22 /* DazarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DazarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		056829811BEF923A001F1B22 /* DazarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DazarTests.swift; sourceTree = "<group>"; };
+		056829831BEF923A001F1B22 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		056829881BEF923A001F1B22 /* DazarUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DazarUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0568298C1BEF923A001F1B22 /* DazarUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DazarUITests.swift; sourceTree = "<group>"; };
+		0568298E1BEF923A001F1B22 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		056829641BEF923A001F1B22 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0568297A1BEF923A001F1B22 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		056829851BEF923A001F1B22 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0568295E1BEF923A001F1B22 = {
+			isa = PBXGroup;
+			children = (
+				056829691BEF923A001F1B22 /* Dazar */,
+				056829801BEF923A001F1B22 /* DazarTests */,
+				0568298B1BEF923A001F1B22 /* DazarUITests */,
+				056829681BEF923A001F1B22 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		056829681BEF923A001F1B22 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				056829671BEF923A001F1B22 /* Dazar.app */,
+				0568297D1BEF923A001F1B22 /* DazarTests.xctest */,
+				056829881BEF923A001F1B22 /* DazarUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		056829691BEF923A001F1B22 /* Dazar */ = {
+			isa = PBXGroup;
+			children = (
+				0568296A1BEF923A001F1B22 /* AppDelegate.swift */,
+				0568296C1BEF923A001F1B22 /* FirstViewController.swift */,
+				0568296E1BEF923A001F1B22 /* SecondViewController.swift */,
+				056829701BEF923A001F1B22 /* Main.storyboard */,
+				056829731BEF923A001F1B22 /* Assets.xcassets */,
+				056829751BEF923A001F1B22 /* LaunchScreen.storyboard */,
+				056829781BEF923A001F1B22 /* Info.plist */,
+			);
+			path = Dazar;
+			sourceTree = "<group>";
+		};
+		056829801BEF923A001F1B22 /* DazarTests */ = {
+			isa = PBXGroup;
+			children = (
+				056829811BEF923A001F1B22 /* DazarTests.swift */,
+				056829831BEF923A001F1B22 /* Info.plist */,
+			);
+			path = DazarTests;
+			sourceTree = "<group>";
+		};
+		0568298B1BEF923A001F1B22 /* DazarUITests */ = {
+			isa = PBXGroup;
+			children = (
+				0568298C1BEF923A001F1B22 /* DazarUITests.swift */,
+				0568298E1BEF923A001F1B22 /* Info.plist */,
+			);
+			path = DazarUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		056829661BEF923A001F1B22 /* Dazar */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 056829911BEF923A001F1B22 /* Build configuration list for PBXNativeTarget "Dazar" */;
+			buildPhases = (
+				056829631BEF923A001F1B22 /* Sources */,
+				056829641BEF923A001F1B22 /* Frameworks */,
+				056829651BEF923A001F1B22 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Dazar;
+			productName = Dazar;
+			productReference = 056829671BEF923A001F1B22 /* Dazar.app */;
+			productType = "com.apple.product-type.application";
+		};
+		0568297C1BEF923A001F1B22 /* DazarTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 056829941BEF923A001F1B22 /* Build configuration list for PBXNativeTarget "DazarTests" */;
+			buildPhases = (
+				056829791BEF923A001F1B22 /* Sources */,
+				0568297A1BEF923A001F1B22 /* Frameworks */,
+				0568297B1BEF923A001F1B22 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0568297F1BEF923A001F1B22 /* PBXTargetDependency */,
+			);
+			name = DazarTests;
+			productName = DazarTests;
+			productReference = 0568297D1BEF923A001F1B22 /* DazarTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		056829871BEF923A001F1B22 /* DazarUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 056829971BEF923A001F1B22 /* Build configuration list for PBXNativeTarget "DazarUITests" */;
+			buildPhases = (
+				056829841BEF923A001F1B22 /* Sources */,
+				056829851BEF923A001F1B22 /* Frameworks */,
+				056829861BEF923A001F1B22 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0568298A1BEF923A001F1B22 /* PBXTargetDependency */,
+			);
+			name = DazarUITests;
+			productName = DazarUITests;
+			productReference = 056829881BEF923A001F1B22 /* DazarUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0568295F1BEF923A001F1B22 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0710;
+				LastUpgradeCheck = 0710;
+				ORGANIZATIONNAME = Dazar;
+				TargetAttributes = {
+					056829661BEF923A001F1B22 = {
+						CreatedOnToolsVersion = 7.1;
+						DevelopmentTeam = YUVE42J9JH;
+					};
+					0568297C1BEF923A001F1B22 = {
+						CreatedOnToolsVersion = 7.1;
+						DevelopmentTeam = YUVE42J9JH;
+						TestTargetID = 056829661BEF923A001F1B22;
+					};
+					056829871BEF923A001F1B22 = {
+						CreatedOnToolsVersion = 7.1;
+						DevelopmentTeam = YUVE42J9JH;
+						TestTargetID = 056829661BEF923A001F1B22;
+					};
+				};
+			};
+			buildConfigurationList = 056829621BEF923A001F1B22 /* Build configuration list for PBXProject "Dazar" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 0568295E1BEF923A001F1B22;
+			productRefGroup = 056829681BEF923A001F1B22 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				056829661BEF923A001F1B22 /* Dazar */,
+				0568297C1BEF923A001F1B22 /* DazarTests */,
+				056829871BEF923A001F1B22 /* DazarUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		056829651BEF923A001F1B22 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				056829771BEF923A001F1B22 /* LaunchScreen.storyboard in Resources */,
+				056829741BEF923A001F1B22 /* Assets.xcassets in Resources */,
+				056829721BEF923A001F1B22 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0568297B1BEF923A001F1B22 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		056829861BEF923A001F1B22 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		056829631BEF923A001F1B22 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0568296F1BEF923A001F1B22 /* SecondViewController.swift in Sources */,
+				0568296B1BEF923A001F1B22 /* AppDelegate.swift in Sources */,
+				0568296D1BEF923A001F1B22 /* FirstViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		056829791BEF923A001F1B22 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				056829821BEF923A001F1B22 /* DazarTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		056829841BEF923A001F1B22 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0568298D1BEF923A001F1B22 /* DazarUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0568297F1BEF923A001F1B22 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 056829661BEF923A001F1B22 /* Dazar */;
+			targetProxy = 0568297E1BEF923A001F1B22 /* PBXContainerItemProxy */;
+		};
+		0568298A1BEF923A001F1B22 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 056829661BEF923A001F1B22 /* Dazar */;
+			targetProxy = 056829891BEF923A001F1B22 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		056829701BEF923A001F1B22 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				056829711BEF923A001F1B22 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		056829751BEF923A001F1B22 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				056829761BEF923A001F1B22 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		0568298F1BEF923A001F1B22 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		056829901BEF923A001F1B22 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		056829921BEF923A001F1B22 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = Dazar/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = Dazar.Dazar;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		056829931BEF923A001F1B22 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = Dazar/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = Dazar.Dazar;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		056829951BEF923A001F1B22 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = DazarTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = Dazar.DazarTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Dazar.app/Dazar";
+			};
+			name = Debug;
+		};
+		056829961BEF923A001F1B22 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = DazarTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = Dazar.DazarTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Dazar.app/Dazar";
+			};
+			name = Release;
+		};
+		056829981BEF923A001F1B22 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = DazarUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = Dazar.DazarUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = Dazar;
+				USES_XCTRUNNER = YES;
+			};
+			name = Debug;
+		};
+		056829991BEF923A001F1B22 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = DazarUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = Dazar.DazarUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = Dazar;
+				USES_XCTRUNNER = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		056829621BEF923A001F1B22 /* Build configuration list for PBXProject "Dazar" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0568298F1BEF923A001F1B22 /* Debug */,
+				056829901BEF923A001F1B22 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		056829911BEF923A001F1B22 /* Build configuration list for PBXNativeTarget "Dazar" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				056829921BEF923A001F1B22 /* Debug */,
+				056829931BEF923A001F1B22 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		056829941BEF923A001F1B22 /* Build configuration list for PBXNativeTarget "DazarTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				056829951BEF923A001F1B22 /* Debug */,
+				056829961BEF923A001F1B22 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		056829971BEF923A001F1B22 /* Build configuration list for PBXNativeTarget "DazarUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				056829981BEF923A001F1B22 /* Debug */,
+				056829991BEF923A001F1B22 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0568295F1BEF923A001F1B22 /* Project object */;
+}
