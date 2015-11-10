@@ -3,43 +3,54 @@ import CoreLocation
 import MapKit
 
 class FirstViewController: UIViewController, CLLocationManagerDelegate {
+    @IBOutlet var coordinatesTextView : UITextView!
     
+    // holds the CLLocationManager instance created in viewDidAppear()
     var locationManager: CLLocationManager?
     
-    func locationManager(manager: CLLocationManager!,
+    // FirstViewController must be a CLLocationManager delegate in order to get the GPS
+    func locationManager(manager: CLLocationManager,
         didChangeAuthorizationStatus status: CLAuthorizationStatus){
             
             print("The authorization status of location services is changed to: ")
+            var res = ""
             
             switch CLLocationManager.authorizationStatus(){
             case .Authorized:
                 print("Authorized")
+                res = "Authorized"
             case .AuthorizedWhenInUse:
                 print("Authorized when in use")
+                res = "Authorized when in use"
             case .Denied:
                 print("Denied")
+                res = "Denied"
             case .NotDetermined:
                 print("Not determined")
+                res = "Not determined"
             case .Restricted:
                 print("Restricted")
-            default:
-                print("Unhandled")
+                res = "Restricted"
             }
             
+            coordinatesTextView.text = res
     }
     
-    func locationManager(manager: CLLocationManager!,
-        didFailWithError error: NSError!){
+    // FirstViewController must be a CLLocationManager delegate
+    func locationManager(manager: CLLocationManager,
+        didFailWithError error: NSError){
             print("Location manager failed with error = \(error)")
     }
     
-    func locationManager(manager: CLLocationManager!,
-        didUpdateToLocation newLocation: CLLocation!,
-        fromLocation oldLocation: CLLocation!){
-            
-            print("Latitude = \(newLocation.coordinate.latitude)")
-            print("Longitude = \(newLocation.coordinate.longitude)")
-            
+    // FirstViewController must be a CLLocationManager delegate. This functions gets the device's GPS location
+    func locationManager(manager: CLLocationManager,
+        didUpdateLocations locations: [CLLocation]) {
+            let last = locations.count - 1
+            print("Latitude = \(locations[last].coordinate.latitude)")
+            print("Longitude = \(locations[last].coordinate.longitude)")
+            coordinatesTextView.text =
+            "Latitude = \(locations[last].coordinate.latitude)\nLongitude = \(locations[last].coordinate.longitude)"
+            coordinatesTextView.text = coordinatesTextView.text + "\nnumber of locations: \(locations.count)"
     }
     
     func displayAlertWithTitle(title: String, message: String){
@@ -54,6 +65,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate {
         presentViewController(controller, animated: true, completion: nil)
     }
 
+    // Factory for the CLLocationManager instance
     func createLocationManager(startImmediately: Bool){
         locationManager = CLLocationManager()
         if let manager = locationManager {
@@ -65,6 +77,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate {
         }
     }
     
+    // The view framework method that creates the CLLocationManager
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         
@@ -103,6 +116,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate {
             user to enable the location services. */
             print("Location services are not enabled")
         }
+        coordinatesTextView.text = "Hello there"
     }
 
     override func viewDidLoad() {
