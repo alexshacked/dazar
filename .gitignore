@@ -1,2 +1,6 @@
 *.pyc
 .idea
+
+ios/Dazar/Dazar.xcodeproj
+ios/Dazar/dazplay.playground
+testing_backend/report.txt
