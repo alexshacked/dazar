@@ -2,38 +2,84 @@ import UIKit
 import CoreLocation
 import MapKit
 
-class FirstViewController: UIViewController, CLLocationManagerDelegate {
-    @IBOutlet var coordinatesTextView : UITextView!
+class MyAnnotation: NSObject, MKAnnotation {
+    var coordinate: CLLocationCoordinate2D = CLLocationCoordinate2DMake(0, 0)
+    var title: String?
+    var subtitle: String?
     
+    init(coordinate: CLLocationCoordinate2D, title: String, subtitle: String){
+        self.coordinate = coordinate
+        self.title = title
+        self.subtitle = subtitle
+        super.init()
+    }
+    
+}
+
+class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate {
     // holds the CLLocationManager instance created in viewDidAppear()
     var locationManager: CLLocationManager?
+    
+    var mapView: MKMapView!
+    
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)!
+        mapView = MKMapView()
+    }
+    
+    /* We have a pin on the map; now zoom into it and make that pin
+    the center of the map */
+    func setCenterOfMapToLocation(location: CLLocationCoordinate2D){
+        let span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        let region = MKCoordinateRegion(center: location, span: span)
+        mapView.setRegion(region, animated: true)
+    }
+    
+    func addPinToMapView(lat: Double, lng: Double){
+        
+        /* This is just a sample location */
+        let location = CLLocationCoordinate2D(latitude: lat,
+            longitude: lng)
+        
+        /* Create the annotation using the location */
+        let annotation = MyAnnotation(coordinate: location,
+            title: "My Title",
+            subtitle: "My Sub Title")
+        
+        /* And eventually add it to the map */
+        let annotations = mapView.annotations
+        if annotations.count == 1 {
+            let an = annotations[0]
+            if an.coordinate.latitude == lat && an.coordinate.longitude == lng {
+                return
+            }
+        }
+        
+        mapView.removeAnnotations(annotations)
+        mapView.addAnnotation(annotation)
+        /* And now center the map around the point */
+        setCenterOfMapToLocation(location)
+        
+    }
+
     
     // FirstViewController must be a CLLocationManager delegate in order to get the GPS
     func locationManager(manager: CLLocationManager,
         didChangeAuthorizationStatus status: CLAuthorizationStatus){
-            
             print("The authorization status of location services is changed to: ")
-            var res = ""
             
             switch CLLocationManager.authorizationStatus(){
             case .Authorized:
                 print("Authorized")
-                res = "Authorized"
             case .AuthorizedWhenInUse:
                 print("Authorized when in use")
-                res = "Authorized when in use"
             case .Denied:
                 print("Denied")
-                res = "Denied"
             case .NotDetermined:
                 print("Not determined")
-                res = "Not determined"
             case .Restricted:
                 print("Restricted")
-                res = "Restricted"
             }
-            
-            coordinatesTextView.text = res
     }
     
     // FirstViewController must be a CLLocationManager delegate
@@ -48,9 +94,8 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate {
             let last = locations.count - 1
             print("Latitude = \(locations[last].coordinate.latitude)")
             print("Longitude = \(locations[last].coordinate.longitude)")
-            coordinatesTextView.text =
-            "Latitude = \(locations[last].coordinate.latitude)\nLongitude = \(locations[last].coordinate.longitude)"
-            coordinatesTextView.text = coordinatesTextView.text + "\nnumber of locations: \(locations.count)"
+            
+            addPinToMapView(locations[last].coordinate.latitude, lng: locations[last].coordinate.longitude)
     }
     
     func displayAlertWithTitle(title: String, message: String){
@@ -116,12 +161,14 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate {
             user to enable the location services. */
             print("Location services are not enabled")
         }
-        coordinatesTextView.text = "Hello there"
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        mapView.mapType = .Standard
+        mapView.frame = view.frame
+        mapView.delegate = self
+        view.addSubview(mapView)
     }
 
     override func didReceiveMemoryWarning() {
