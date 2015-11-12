@@ -2,20 +2,6 @@ import UIKit
 import CoreLocation
 import MapKit
 
-class MyAnnotation: NSObject, MKAnnotation {
-    var coordinate: CLLocationCoordinate2D = CLLocationCoordinate2DMake(0, 0)
-    var title: String?
-    var subtitle: String?
-    
-    init(coordinate: CLLocationCoordinate2D, title: String, subtitle: String){
-        self.coordinate = coordinate
-        self.title = title
-        self.subtitle = subtitle
-        super.init()
-    }
-    
-}
-
 class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate {
     // holds the CLLocationManager instance created in viewDidAppear()
     var locationManager: CLLocationManager?
@@ -35,22 +21,33 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         mapView.setRegion(region, animated: true)
     }
     
-    func addPinToMapView(lat: Double, lng: Double){
+    func getTime() -> String {
+        let date = NSDate()
+        let formatter = NSDateFormatter()
+        formatter.timeStyle = .LongStyle
+        let res = formatter.stringFromDate(date)
+        return res
+    }
+    
+    func addPinToMapView(lat: Double, lng: Double) {
         
         /* This is just a sample location */
         let location = CLLocationCoordinate2D(latitude: lat,
             longitude: lng)
         
         /* Create the annotation using the location */
-        let annotation = MyAnnotation(coordinate: location,
+        let annotation = PlayerAnnotation(coordinate: location,
             title: "My Title",
-            subtitle: "My Sub Title")
+            subtitle: "My Sub Title",
+            pinColor: .Blue)
         
+        print("addPinToMapView() called: \(getTime())")
         /* And eventually add it to the map */
         let annotations = mapView.annotations
         if annotations.count == 1 {
             let an = annotations[0]
             if an.coordinate.latitude == lat && an.coordinate.longitude == lng {
+                print("Same coordinate as before")
                 return
             }
         }
@@ -59,9 +56,49 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         mapView.addAnnotation(annotation)
         /* And now center the map around the point */
         setCenterOfMapToLocation(location)
-        
     }
-
+    
+    func mapView(mapView: MKMapView,
+        viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+            
+            if annotation is PlayerAnnotation == false {
+                return nil
+            }
+            
+            /* First, typecast the annotation for which the Map View
+            fired this delegate message */
+            let senderAnnotation = annotation as! PlayerAnnotation
+            
+            /* We will attempt to get a reusable
+            identifier for the pin we are about to create */
+            let pinReusableIdentifier = senderAnnotation.pinColor!.rawValue
+            
+            /* Using the identifier we retrieved above, we will
+            attempt to reuse a pin in the sender Map View */
+            let pinAnnotationView =
+            mapView.dequeueReusableAnnotationViewWithIdentifier(
+                pinReusableIdentifier)
+            
+            if pinAnnotationView != nil {
+                return pinAnnotationView
+            }
+            
+            
+            /* If we fail to reuse a pin, we will create one */
+            let annotationView = MKAnnotationView(annotation: senderAnnotation,
+                reuseIdentifier: pinReusableIdentifier)
+                
+            /* Make sure we can see the callouts on top of
+             each pin in case we have assigned title and/or
+             subtitle to each pin */
+            annotationView.canShowCallout = true
+            if let pinImage = UIImage(named: "CustomerPin") {
+                annotationView.image = pinImage
+            }
+                
+            return annotationView
+            
+    }
     
     // FirstViewController must be a CLLocationManager delegate in order to get the GPS
     func locationManager(manager: CLLocationManager,

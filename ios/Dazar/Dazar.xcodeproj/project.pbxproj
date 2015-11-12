@@ -15,6 +15,7 @@
 		056829771BEF923A001F1B22 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 056829751BEF923A001F1B22 /* LaunchScreen.storyboard */; };
 		056829821BEF923A001F1B22 /* DazarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 056829811BEF923A001F1B22 /* DazarTests.swift */; };
 		0568298D1BEF923A001F1B22 /* DazarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568298C1BEF923A001F1B22 /* DazarUITests.swift */; };
+		0568299B1BF3A44A001F1B22 /* DazarMapAnnotations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		056829881BEF923A001F1B22 /* DazarUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DazarUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0568298C1BEF923A001F1B22 /* DazarUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DazarUITests.swift; sourceTree = "<group>"; };
 		0568298E1BEF923A001F1B22 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DazarMapAnnotations.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,7 @@
 				056829731BEF923A001F1B22 /* Assets.xcassets */,
 				056829751BEF923A001F1B22 /* LaunchScreen.storyboard */,
 				056829781BEF923A001F1B22 /* Info.plist */,
+				0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */,
 			);
 			path = Dazar;
 			sourceTree = "<group>";
@@ -264,6 +267,7 @@
 			files = (
 				0568296F1BEF923A001F1B22 /* SecondViewController.swift in Sources */,
 				0568296B1BEF923A001F1B22 /* AppDelegate.swift in Sources */,
+				0568299B1BF3A44A001F1B22 /* DazarMapAnnotations.swift in Sources */,
 				0568296D1BEF923A001F1B22 /* FirstViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
