@@ -30,32 +30,40 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     }
     
     func addPinToMapView(lat: Double, lng: Double) {
-        
-        /* This is just a sample location */
-        let location = CLLocationCoordinate2D(latitude: lat,
-            longitude: lng)
-        
-        /* Create the annotation using the location */
-        let annotation = PlayerAnnotation(coordinate: location,
-            title: "My Title",
-            subtitle: "My Sub Title",
-            pinColor: .Blue)
-        
         print("addPinToMapView() called: \(getTime())")
-        /* And eventually add it to the map */
-        let annotations = mapView.annotations
-        if annotations.count == 1 {
-            let an = annotations[0]
-            if an.coordinate.latitude == lat && an.coordinate.longitude == lng {
-                print("Same coordinate as before")
-                return
+        
+        /* The locations */
+        let locCustomer = CLLocationCoordinate2D(latitude: lat,
+            longitude: lng)
+        let locVendor = CLLocationCoordinate2D(latitude: 32.1243871,
+            longitude: 34.8162494)
+        
+        /* Avoid redundant refresh */
+        for anno in mapView.annotations {
+            let playerAnno = anno as! PlayerAnnotation;
+            if playerAnno.anType == .Customer {
+                if playerAnno.coordinate.latitude == lat && playerAnno.coordinate.longitude == lng {
+                    print("Same coordinate as before")
+                    return
+                }
             }
         }
         
-        mapView.removeAnnotations(annotations)
-        mapView.addAnnotation(annotation)
+        /* Create the annotation using the location */
+        let custAnno = PlayerAnnotation(coordinate: locCustomer,
+            title: "My Title",
+            subtitle: "My Sub Title",
+            anType: .Customer)
+        
+        let vendAnno = PlayerAnnotation(coordinate: locVendor,
+            title: "My Title",
+            subtitle: "My Sub Title",
+            anType: .Vendor)
+        
+        mapView.removeAnnotations(mapView.annotations)
+        mapView.addAnnotations([custAnno, vendAnno])
         /* And now center the map around the point */
-        setCenterOfMapToLocation(location)
+        setCenterOfMapToLocation(locCustomer)
     }
     
     func mapView(mapView: MKMapView,
@@ -71,7 +79,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             
             /* We will attempt to get a reusable
             identifier for the pin we are about to create */
-            let pinReusableIdentifier = senderAnnotation.pinColor!.rawValue
+            let pinReusableIdentifier = senderAnnotation.anType!.rawValue
             
             /* Using the identifier we retrieved above, we will
             attempt to reuse a pin in the sender Map View */
@@ -92,10 +100,16 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
              each pin in case we have assigned title and/or
              subtitle to each pin */
             annotationView.canShowCallout = true
-            if let pinImage = UIImage(named: "CustomerPin") {
-                annotationView.image = pinImage
+            if pinReusableIdentifier == AnType.Customer.rawValue {
+                if let pinImage = UIImage(named: "CustomerPin") {
+                    annotationView.image = pinImage
+                }
+            } else { // if it is not a customer it's a vendor
+                if let pinImage = UIImage(named: "VendorPin") {
+                    annotationView.image = pinImage
+                }
             }
-                
+            
             return annotationView
             
     }
