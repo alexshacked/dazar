@@ -46,8 +46,8 @@ class SecondViewController: UIViewController {
         [
             "latitude": latitude,
             "longitude": longitude,
-            "radius": "20000",
-            "tags": ["restaurants"]
+            "radius": "5000",
+            "tags": [String]()
         ]
         
         
@@ -57,32 +57,12 @@ class SecondViewController: UIViewController {
         
         urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
         
-        let queue = NSOperationQueue()
-        
-        NSURLConnection.sendAsynchronousRequest(urlRequest,
-            queue: queue,
-            completionHandler:
-            {(response,
-                data,
-                error) in
-                dispatch_sync(dispatch_get_main_queue())
-                {
-                        /* Now we may have access to the data, but check if an error came back
-                        first or not */
-                        if data!.length > 0 && error == nil{
-                            let html = NSString(data: data!, encoding: NSUTF8StringEncoding)
-                            //let flat = html as! String
-                            self.resultsTextView.text = "html = \(html)"
-                        } else if data!.length == 0 && error == nil{
-                            self.resultsTextView.text = "Nothing was downloaded"
-                        } else if error != nil{
-                            self.resultsTextView.text = "Error happened = \(error)"
-                        }
-                
-                }
-            }
-        )
-        
+        let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
+        let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
+        print(response)
+        let jsonResult: NSDictionary = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
+        print("Synchronous\(jsonResult)")
+        self.resultsTextView.text = String(jsonResult)
     }
 
 }

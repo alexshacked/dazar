@@ -5,8 +5,9 @@ import MapKit
 class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate {
     // holds the CLLocationManager instance created in viewDidAppear()
     var locationManager: CLLocationManager?
-    
     var mapView: MKMapView!
+    var startTime: CFAbsoluteTime! = nil
+    var tag = 1
     
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
@@ -31,37 +32,55 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     
     func addPinToMapView(lat: Double, lng: Double) {
         print("addPinToMapView() called: \(getTime())")
+        if startTime == nil {
+            startTime = CFAbsoluteTimeGetCurrent()
+        } else {
+            let now = CFAbsoluteTimeGetCurrent()
+            let delta = Int(now - startTime)
+            if delta < 35 {
+                print("Too early for refresh \(delta)")
+                return
+            }
+            startTime = now
+            print("REFRESH")
+        }
         
         /* The locations */
         let locCustomer = CLLocationCoordinate2D(latitude: lat,
             longitude: lng)
-        let locVendor = CLLocationCoordinate2D(latitude: 32.1243871,
-            longitude: 34.8162494)
-        
-        /* Avoid redundant refresh */
-        for anno in mapView.annotations {
-            let playerAnno = anno as! PlayerAnnotation;
-            if playerAnno.anType == .Customer {
-                if playerAnno.coordinate.latitude == lat && playerAnno.coordinate.longitude == lng {
-                    print("Same coordinate as before")
-                    return
-                }
-            }
-        }
         
         /* Create the annotation using the location */
         let custAnno = PlayerAnnotation(coordinate: locCustomer,
-            title: "My Title",
-            subtitle: "My Sub Title",
+            title: "Me",
+            subtitle: "Im here",
             anType: .Customer)
         
-        let vendAnno = PlayerAnnotation(coordinate: locVendor,
-            title: "My Title",
-            subtitle: "My Sub Title",
-            anType: .Vendor)
+        var annoList = [PlayerAnnotation]()
+        annoList.append(custAnno)
+        do {
+            let tweetsDict: NSDictionary = try doGetTweets(String(lat), longitude: String(lng))
+            let data: [NSDictionary] = tweetsDict["data"]! as! [NSDictionary]
+            for one in data {
+                let latitude: Double = one["coordinates"]!["latitude"]! as! Double
+                let longitude: Double = one["coordinates"]!["longitude"]! as! Double
+                let locVendor = CLLocationCoordinate2D(latitude: latitude,
+                    longitude: longitude)
+                
+                let name: String = one["name"]! as! String
+                let tweet: String = one["tweet"]! as! String
+                
+                let vendAnno = PlayerAnnotation(coordinate: locVendor,
+                    title: name,
+                    subtitle: tweet,
+                    anType: .Vendor)
+                annoList.append(vendAnno)
+
+            }
+        } catch {
+        }
         
         mapView.removeAnnotations(mapView.annotations)
-        mapView.addAnnotations([custAnno, vendAnno])
+        mapView.addAnnotations(annoList)
         /* And now center the map around the point */
         setCenterOfMapToLocation(locCustomer)
     }
@@ -81,6 +100,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             identifier for the pin we are about to create */
             let pinReusableIdentifier = senderAnnotation.anType!.rawValue
             
+            /*
             /* Using the identifier we retrieved above, we will
             attempt to reuse a pin in the sender Map View */
             let pinAnnotationView =
@@ -90,6 +110,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             if pinAnnotationView != nil {
                 return pinAnnotationView
             }
+            */
             
             
             /* If we fail to reuse a pin, we will create one */
@@ -99,7 +120,8 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             /* Make sure we can see the callouts on top of
              each pin in case we have assigned title and/or
              subtitle to each pin */
-            annotationView.canShowCallout = true
+            annotationView.canShowCallout = false
+            
             if pinReusableIdentifier == AnType.Customer.rawValue {
                 if let pinImage = UIImage(named: "CustomerPin") {
                     annotationView.image = pinImage
@@ -111,7 +133,56 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             }
             
             return annotationView
-            
+    }
+    
+    func mapView(mapView: MKMapView, didAddAnnotationViews views: [MKAnnotationView]) {
+        for view in views {
+            view.canShowCallout = false
+            mapView.selectAnnotation(view.annotation!, animated: true)
+            view.canShowCallout = true
+        }
+    }
+    
+    func getTag() -> Int {
+        return ++tag
+    }
+    
+    func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
+        let pla: PlayerAnnotation = view.annotation as! PlayerAnnotation
+        
+        if view.canShowCallout == false {
+            let venueView = UITextView(frame: CGRect(x:10, y:10, width:200, height: 50))
+            venueView.text = pla.subtitle
+            venueView.tag = getTag()
+            pla.tag = venueView.tag
+            view.addSubview(venueView)
+            UIView.animateWithDuration(0.4, animations: {
+                venueView.frame = CGRect (x:0, y:-10, width:100, height:15) })
+        } else {
+            let tag = pla.tag
+            if let viewWithTag = view.viewWithTag(tag) {
+                viewWithTag.removeFromSuperview()
+            }
+        }
+    }
+    
+    func mapView(mapView: MKMapView, didDeselectAnnotationView view: MKAnnotationView) {
+        let pla: PlayerAnnotation = view.annotation as! PlayerAnnotation
+        let tag = pla.tag
+        if view.canShowCallout == false {
+            if let viewWithTag = view.viewWithTag(tag) {
+                viewWithTag.removeFromSuperview()
+        } else {
+            let venueView = UITextView(frame: CGRect(x:10, y:10, width:200, height: 50))
+            venueView.text = pla.subtitle
+            venueView.tag = tag
+            pla.tag = venueView.tag
+            view.addSubview(venueView)
+            UIView.animateWithDuration(0.4, animations: {
+                venueView.frame = CGRect (x:0, y:-10, width:100, height:15) })
+
+            }
+        }
     }
     
     // FirstViewController must be a CLLocationManager delegate in order to get the GPS
@@ -212,6 +283,41 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             user to enable the location services. */
             print("Location services are not enabled")
         }
+    }
+    
+    func doGetTweets(latitude: String, longitude: String) throws -> NSDictionary {
+        let httpMethod = "POST"
+        let timeout = 15.0
+        let urlAsString = "http://dazar.io/getTweets"
+        let url = NSURL(string: urlAsString)
+        
+        let urlRequest = NSMutableURLRequest(URL: url!,
+            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
+            timeoutInterval: timeout)
+        urlRequest.HTTPMethod = httpMethod
+        
+        let request : [NSString: AnyObject] =
+        [
+            "latitude": latitude,
+            "longitude": longitude,
+            "radius": "5000",
+            "tags": ["all"]
+        ]
+        
+        
+        let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
+            options: .PrettyPrinted)
+        let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
+        
+        urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
+        
+        let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
+        let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
+        print(response)
+        let jsonResult: NSDictionary = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
+        print("Synchronous\(jsonResult)")
+        
+        return jsonResult
     }
 
     override func viewDidLoad() {

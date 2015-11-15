@@ -20,6 +20,7 @@ class PlayerAnnotation: NSObject, MKAnnotation {
     var title: String?
     var subtitle: String?
     var anType: AnType?
+    var tag = 0
     
     init(coordinate: CLLocationCoordinate2D, title: String, subtitle: String, anType: AnType) {
         self.coordinate = coordinate
@@ -36,8 +37,6 @@ class PlayerAnnotation: NSObject, MKAnnotation {
                 anType: .Vendor)
     }    
 }
-
-
 
 
 
