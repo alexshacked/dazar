@@ -31,14 +31,14 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     }
     
     func addPinToMapView(lat: Double, lng: Double) {
-        print("addPinToMapView() called: \(getTime())")
+        //print("addPinToMapView() called: \(getTime())")
         if startTime == nil {
             startTime = CFAbsoluteTimeGetCurrent()
         } else {
             let now = CFAbsoluteTimeGetCurrent()
             let delta = Int(now - startTime)
             if delta < 35 {
-                print("Too early for refresh \(delta)")
+                //print("Too early for refresh \(delta)")
                 return
             }
             startTime = now
@@ -151,6 +151,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         let pla: PlayerAnnotation = view.annotation as! PlayerAnnotation
         
         if view.canShowCallout == false {
+            print("didSelectAnnotationView - false")
             let venueView = UITextView(frame: CGRect(x:10, y:10, width:200, height: 50))
             venueView.text = pla.subtitle
             venueView.tag = getTag()
@@ -159,6 +160,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             UIView.animateWithDuration(0.4, animations: {
                 venueView.frame = CGRect (x:0, y:-10, width:100, height:15) })
         } else {
+            print("didSelectAnnotationView - true")
             let tag = pla.tag
             if let viewWithTag = view.viewWithTag(tag) {
                 viewWithTag.removeFromSuperview()
@@ -170,18 +172,25 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         let pla: PlayerAnnotation = view.annotation as! PlayerAnnotation
         let tag = pla.tag
         if view.canShowCallout == false {
+            print("didDeselectAnnotationView - false")
             if let viewWithTag = view.viewWithTag(tag) {
                 viewWithTag.removeFromSuperview()
-        } else {
+            }
+            
+        }
+        else {
+            print("didDeselectAnnotationView - true")
+            if let viewWithTag = view.viewWithTag(tag) {
+                return
+            }
             let venueView = UITextView(frame: CGRect(x:10, y:10, width:200, height: 50))
             venueView.text = pla.subtitle
-            venueView.tag = tag
+            venueView.tag = getTag()
             pla.tag = venueView.tag
             view.addSubview(venueView)
             UIView.animateWithDuration(0.4, animations: {
                 venueView.frame = CGRect (x:0, y:-10, width:100, height:15) })
 
-            }
         }
     }
     
@@ -214,8 +223,8 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     func locationManager(manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]) {
             let last = locations.count - 1
-            print("Latitude = \(locations[last].coordinate.latitude)")
-            print("Longitude = \(locations[last].coordinate.longitude)")
+            //print("Latitude = \(locations[last].coordinate.latitude)")
+            //print("Longitude = \(locations[last].coordinate.longitude)")
             
             addPinToMapView(locations[last].coordinate.latitude, lng: locations[last].coordinate.longitude)
     }
