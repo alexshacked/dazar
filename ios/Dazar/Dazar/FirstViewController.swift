@@ -137,9 +137,11 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     
     func mapView(mapView: MKMapView, didAddAnnotationViews views: [MKAnnotationView]) {
         for view in views {
-            view.canShowCallout = false
-            mapView.selectAnnotation(view.annotation!, animated: true)
-            view.canShowCallout = true
+            if view.annotation != nil {
+                view.canShowCallout = false
+                mapView.selectAnnotation(view.annotation!, animated: true)
+                view.canShowCallout = true
+            }
         }
     }
     
@@ -147,18 +149,35 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         return ++tag
     }
     
+    func tail(text: String, num: Int) ->String {
+        var res: String = ""
+        let arr = text.characters.split{$0 == " "}.map(String.init)
+        if arr.count <= num {
+            return text
+        }
+        
+        for var index = arr.count - num; index < arr.count; ++index {
+            res += arr[index]
+            res += " "
+        }
+        return res
+    }
+
+    
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
+        if view.annotation == nil {
+            return
+        }
         let pla: PlayerAnnotation = view.annotation as! PlayerAnnotation
         
         if view.canShowCallout == false {
             print("didSelectAnnotationView - false")
-            let venueView = UITextView(frame: CGRect(x:10, y:10, width:200, height: 50))
-            venueView.text = pla.subtitle
+            let venueView = UITextView(frame: CGRectMake(0, -25, 130, 25))
+            venueView.text = tail(pla.subtitle!, num: 3)
+            venueView.textAlignment = .Right
             venueView.tag = getTag()
             pla.tag = venueView.tag
             view.addSubview(venueView)
-            UIView.animateWithDuration(0.4, animations: {
-                venueView.frame = CGRect (x:0, y:-10, width:100, height:15) })
         } else {
             print("didSelectAnnotationView - true")
             let tag = pla.tag
@@ -169,6 +188,9 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     }
     
     func mapView(mapView: MKMapView, didDeselectAnnotationView view: MKAnnotationView) {
+        if view.annotation == nil {
+            return
+        }
         let pla: PlayerAnnotation = view.annotation as! PlayerAnnotation
         let tag = pla.tag
         if view.canShowCallout == false {
@@ -183,14 +205,12 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             if let viewWithTag = view.viewWithTag(tag) {
                 return
             }
-            let venueView = UITextView(frame: CGRect(x:10, y:10, width:200, height: 50))
-            venueView.text = pla.subtitle
+            let venueView = UITextView(frame: CGRectMake(0, -25, 130, 25))
+            venueView.text = tail(pla.subtitle!, num: 3)
+            venueView.textAlignment = .Right
             venueView.tag = getTag()
             pla.tag = venueView.tag
             view.addSubview(venueView)
-            UIView.animateWithDuration(0.4, animations: {
-                venueView.frame = CGRect (x:0, y:-10, width:100, height:15) })
-
         }
     }
     
