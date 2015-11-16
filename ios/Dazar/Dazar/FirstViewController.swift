@@ -163,6 +163,19 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         return res
     }
 
+    func createHint(view: MKAnnotationView, pla: PlayerAnnotation) {
+        let venueView = UITextView(frame: CGRectMake(0, -25, 130, 25))
+        venueView.text = tail(pla.subtitle!, num: 3)
+        venueView.textAlignment = .Right
+        if pla.anType == .Vendor {
+            venueView.backgroundColor = UIColor(CIColor: CIColor(string: "0.5 0.7 0.3 1.0"))
+        } else {
+            venueView.backgroundColor = UIColor(CIColor: CIColor(string: "0.3843 0.7215 1.0 1.0"))
+        }
+        venueView.tag = getTag()
+        pla.tag = venueView.tag
+        view.addSubview(venueView)
+    }
     
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         if view.annotation == nil {
@@ -172,12 +185,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         
         if view.canShowCallout == false {
             print("didSelectAnnotationView - false")
-            let venueView = UITextView(frame: CGRectMake(0, -25, 130, 25))
-            venueView.text = tail(pla.subtitle!, num: 3)
-            venueView.textAlignment = .Right
-            venueView.tag = getTag()
-            pla.tag = venueView.tag
-            view.addSubview(venueView)
+            createHint(view, pla: pla)
         } else {
             print("didSelectAnnotationView - true")
             let tag = pla.tag
@@ -205,12 +213,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             if let viewWithTag = view.viewWithTag(tag) {
                 return
             }
-            let venueView = UITextView(frame: CGRectMake(0, -25, 130, 25))
-            venueView.text = tail(pla.subtitle!, num: 3)
-            venueView.textAlignment = .Right
-            venueView.tag = getTag()
-            pla.tag = venueView.tag
-            view.addSubview(venueView)
+            createHint(view, pla: pla)
         }
     }
     
