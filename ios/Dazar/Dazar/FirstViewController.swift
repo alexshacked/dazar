@@ -168,7 +168,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         venueView.text = tail(pla.subtitle!, num: 3)
         venueView.textAlignment = .Right
         if pla.anType == .Vendor {
-            venueView.backgroundColor = UIColor(CIColor: CIColor(string: "0.5 0.7 0.3 1.0"))
+            venueView.backgroundColor = UIColor(CIColor: CIColor(string: "0.4392 0.8588 0.5765 1.0"))//CIColor(string: "0.6 0.8 0.1961 1.0"))
         } else {
             venueView.backgroundColor = UIColor(CIColor: CIColor(string: "0.3843 0.7215 1.0 1.0"))
         }
