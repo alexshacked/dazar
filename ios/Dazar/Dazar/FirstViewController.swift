@@ -2,16 +2,42 @@ import UIKit
 import CoreLocation
 import MapKit
 
-class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate {
+class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate, UIPopoverPresentationControllerDelegate {
     // holds the CLLocationManager instance created in viewDidAppear()
     var locationManager: CLLocationManager?
     var mapView: MKMapView!
     var startTime: CFAbsoluteTime! = nil
+    
     var tag = 1
+    var selectedItem: String?
+    var nav: UINavigationController?
+    
+    func selectionHandler(selectedItem: String)->Void{
+        self.selectedItem = selectedItem
+        
+        print("selectionHandler called")
+        
+    }
+    
+    func initTagsPopup() {
+        let popoverContent = TagsController(style: .Plain)
+        popoverContent.selectionHandler = self.selectionHandler
+        
+        nav = UINavigationController(rootViewController: popoverContent)
+        nav!.modalPresentationStyle = UIModalPresentationStyle.Popover
+        
+        let popover = nav!.popoverPresentationController
+        popover!.delegate = self
+        
+        //- crashes - popover!.sourceView = self.view
+        //-unnecessary - popover!.sourceRect = CGRectMake(100,100,0,0)
+    }
+    
     
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
         mapView = MKMapView()
+        initTagsPopup()
     }
     
     /* We have a pin on the map; now zoom into it and make that pin
@@ -350,6 +376,10 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         print("Synchronous\(jsonResult)")
         
         return jsonResult
+    }
+    
+    @IBAction func performTags(sender: UIBarButtonItem){
+        self.presentViewController(nav!, animated: true, completion: nil)
     }
 
     override func viewDidLoad() {

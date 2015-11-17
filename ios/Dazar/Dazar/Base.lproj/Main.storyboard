@@ -19,7 +19,13 @@
                         <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Dazar Buyer" id="YJH-7C-f6G"/>
+                    <navigationItem key="navigationItem" title="Dazar Buyer" id="YJH-7C-f6G">
+                        <barButtonItem key="rightBarButtonItem" title="Search tags" id="wV1-OQ-Zho">
+                            <connections>
+                                <action selector="performTags:" destination="9pv-A4-QxB" id="AUQ-NE-Gvx"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="W5J-7L-Pyd" sceneMemberID="firstResponder"/>
             </objects>

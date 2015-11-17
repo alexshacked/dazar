@@ -16,6 +16,7 @@
 		056829821BEF923A001F1B22 /* DazarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 056829811BEF923A001F1B22 /* DazarTests.swift */; };
 		0568298D1BEF923A001F1B22 /* DazarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568298C1BEF923A001F1B22 /* DazarUITests.swift */; };
 		0568299B1BF3A44A001F1B22 /* DazarMapAnnotations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */; };
+		05D8550D1BFA44B600AABEC7 /* TagsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05D8550C1BFA44B600AABEC7 /* TagsController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 		0568298C1BEF923A001F1B22 /* DazarUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DazarUITests.swift; sourceTree = "<group>"; };
 		0568298E1BEF923A001F1B22 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DazarMapAnnotations.swift; sourceTree = "<group>"; };
+		05D8550C1BFA44B600AABEC7 /* TagsController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TagsController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +111,7 @@
 				056829751BEF923A001F1B22 /* LaunchScreen.storyboard */,
 				056829781BEF923A001F1B22 /* Info.plist */,
 				0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */,
+				05D8550C1BFA44B600AABEC7 /* TagsController.swift */,
 			);
 			path = Dazar;
 			sourceTree = "<group>";
@@ -267,6 +270,7 @@
 			files = (
 				0568296F1BEF923A001F1B22 /* SecondViewController.swift in Sources */,
 				0568296B1BEF923A001F1B22 /* AppDelegate.swift in Sources */,
+				05D8550D1BFA44B600AABEC7 /* TagsController.swift in Sources */,
 				0568299B1BF3A44A001F1B22 /* DazarMapAnnotations.swift in Sources */,
 				0568296D1BEF923A001F1B22 /* FirstViewController.swift in Sources */,
 			);
@@ -493,6 +497,7 @@
 				056829931BEF923A001F1B22 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		056829941BEF923A001F1B22 /* Build configuration list for PBXNativeTarget "DazarTests" */ = {
 			isa = XCConfigurationList;
@@ -501,6 +506,7 @@
 				056829961BEF923A001F1B22 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		056829971BEF923A001F1B22 /* Build configuration list for PBXNativeTarget "DazarUITests" */ = {
 			isa = XCConfigurationList;
@@ -509,6 +515,7 @@
 				056829991BEF923A001F1B22 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
