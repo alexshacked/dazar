@@ -12,7 +12,6 @@
 		0568296F1BEF923A001F1B22 /* SecondViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568296E1BEF923A001F1B22 /* SecondViewController.swift */; };
 		056829721BEF923A001F1B22 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 056829701BEF923A001F1B22 /* Main.storyboard */; };
 		056829741BEF923A001F1B22 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 056829731BEF923A001F1B22 /* Assets.xcassets */; };
-		056829771BEF923A001F1B22 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 056829751BEF923A001F1B22 /* LaunchScreen.storyboard */; };
 		056829821BEF923A001F1B22 /* DazarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 056829811BEF923A001F1B22 /* DazarTests.swift */; };
 		0568298D1BEF923A001F1B22 /* DazarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568298C1BEF923A001F1B22 /* DazarUITests.swift */; };
 		0568299B1BF3A44A001F1B22 /* DazarMapAnnotations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */; };
@@ -43,7 +42,6 @@
 		0568296E1BEF923A001F1B22 /* SecondViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondViewController.swift; sourceTree = "<group>"; };
 		056829711BEF923A001F1B22 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		056829731BEF923A001F1B22 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		056829761BEF923A001F1B22 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		056829781BEF923A001F1B22 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0568297D1BEF923A001F1B22 /* DazarTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DazarTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		056829811BEF923A001F1B22 /* DazarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DazarTests.swift; sourceTree = "<group>"; };
@@ -108,7 +106,6 @@
 				0568296E1BEF923A001F1B22 /* SecondViewController.swift */,
 				056829701BEF923A001F1B22 /* Main.storyboard */,
 				056829731BEF923A001F1B22 /* Assets.xcassets */,
-				056829751BEF923A001F1B22 /* LaunchScreen.storyboard */,
 				056829781BEF923A001F1B22 /* Info.plist */,
 				0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */,
 				05D8550C1BFA44B600AABEC7 /* TagsController.swift */,
@@ -241,7 +238,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				056829771BEF923A001F1B22 /* LaunchScreen.storyboard in Resources */,
 				056829741BEF923A001F1B22 /* Assets.xcassets in Resources */,
 				056829721BEF923A001F1B22 /* Main.storyboard in Resources */,
 			);
@@ -314,14 +310,6 @@
 				056829711BEF923A001F1B22 /* Base */,
 			);
 			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		056829751BEF923A001F1B22 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				056829761BEF923A001F1B22 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
