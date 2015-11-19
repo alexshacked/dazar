@@ -9,35 +9,15 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     var startTime: CFAbsoluteTime! = nil
     
     var tag = 1
-    var selectedItem: String?
-    var nav: UINavigationController?
     
     func selectionHandler(selectedItem: String)->Void{
-        self.selectedItem = selectedItem
-        
         print("selectionHandler called")
         
     }
     
-    func initTagsPopup() {
-        let popoverContent = TagsController(style: .Plain)
-        popoverContent.selectionHandler = self.selectionHandler
-        
-        nav = UINavigationController(rootViewController: popoverContent)
-        nav!.modalPresentationStyle = UIModalPresentationStyle.Popover
-        
-        let popover = nav!.popoverPresentationController
-        popover!.delegate = self
-        
-        //- crashes - popover!.sourceView = self.view
-        //-unnecessary - popover!.sourceRect = CGRectMake(100,100,0,0)
-    }
-    
-    
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
         mapView = MKMapView()
-        initTagsPopup()
     }
     
     /* We have a pin on the map; now zoom into it and make that pin
@@ -194,7 +174,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         venueView.text = tail(pla.subtitle!, num: 3)
         venueView.textAlignment = .Right
         if pla.anType == .Vendor {
-            venueView.backgroundColor = UIColor(CIColor: CIColor(string: "0.4392 0.8588 0.5765 1.0"))//CIColor(string: "0.6 0.8 0.1961 1.0"))
+            venueView.backgroundColor = UIColor(CIColor: CIColor(string: "0.4392 0.8588 0.5765 1.0"))
         } else {
             venueView.backgroundColor = UIColor(CIColor: CIColor(string: "0.3843 0.7215 1.0 1.0"))
         }
@@ -379,7 +359,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     }
     
     @IBAction func performTags(sender: UIBarButtonItem){
-        self.presentViewController(nav!, animated: true, completion: nil)
+        print("performTags")
     }
 
     override func viewDidLoad() {
