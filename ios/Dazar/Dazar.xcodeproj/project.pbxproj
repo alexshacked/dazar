@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0507FE8C1BFDD8E9003FAAF7 /* TagsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0507FE8B1BFDD8E9003FAAF7 /* TagsController.swift */; };
+		0507FE8E1BFE2AAA003FAAF7 /* LocationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0507FE8D1BFE2AAA003FAAF7 /* LocationController.swift */; };
+		0507FE901BFE778D003FAAF7 /* TagItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0507FE8F1BFE778D003FAAF7 /* TagItem.swift */; };
+		0507FE921BFE7BD8003FAAF7 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0507FE911BFE7BD8003FAAF7 /* Constants.swift */; };
 		0568296B1BEF923A001F1B22 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568296A1BEF923A001F1B22 /* AppDelegate.swift */; };
 		0568296D1BEF923A001F1B22 /* FirstViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568296C1BEF923A001F1B22 /* FirstViewController.swift */; };
 		0568296F1BEF923A001F1B22 /* SecondViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568296E1BEF923A001F1B22 /* SecondViewController.swift */; };
@@ -35,6 +39,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0507FE8B1BFDD8E9003FAAF7 /* TagsController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TagsController.swift; sourceTree = "<group>"; };
+		0507FE8D1BFE2AAA003FAAF7 /* LocationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationController.swift; sourceTree = "<group>"; };
+		0507FE8F1BFE778D003FAAF7 /* TagItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TagItem.swift; sourceTree = "<group>"; };
+		0507FE911BFE7BD8003FAAF7 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		056829671BEF923A001F1B22 /* Dazar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dazar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0568296A1BEF923A001F1B22 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0568296C1BEF923A001F1B22 /* FirstViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstViewController.swift; sourceTree = "<group>"; };
@@ -106,6 +114,10 @@
 				056829731BEF923A001F1B22 /* Assets.xcassets */,
 				056829781BEF923A001F1B22 /* Info.plist */,
 				0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */,
+				0507FE8B1BFDD8E9003FAAF7 /* TagsController.swift */,
+				0507FE8D1BFE2AAA003FAAF7 /* LocationController.swift */,
+				0507FE8F1BFE778D003FAAF7 /* TagItem.swift */,
+				0507FE911BFE7BD8003FAAF7 /* Constants.swift */,
 			);
 			path = Dazar;
 			sourceTree = "<group>";
@@ -262,9 +274,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				0568296F1BEF923A001F1B22 /* SecondViewController.swift in Sources */,
+				0507FE901BFE778D003FAAF7 /* TagItem.swift in Sources */,
 				0568296B1BEF923A001F1B22 /* AppDelegate.swift in Sources */,
+				0507FE8C1BFDD8E9003FAAF7 /* TagsController.swift in Sources */,
 				0568299B1BF3A44A001F1B22 /* DazarMapAnnotations.swift in Sources */,
+				0507FE8E1BFE2AAA003FAAF7 /* LocationController.swift in Sources */,
 				0568296D1BEF923A001F1B22 /* FirstViewController.swift in Sources */,
+				0507FE921BFE7BD8003FAAF7 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -397,6 +413,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = Dazar/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = Dazar.Dazar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -408,6 +425,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = Dazar/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = Dazar.Dazar;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -2,18 +2,13 @@ import UIKit
 import CoreLocation
 import MapKit
 
-class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate, UIPopoverPresentationControllerDelegate {
+class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate, TagsControllerDelegate {
     // holds the CLLocationManager instance created in viewDidAppear()
     var locationManager: CLLocationManager?
     var mapView: MKMapView!
     var startTime: CFAbsoluteTime! = nil
-    
     var tag = 1
-    
-    func selectionHandler(selectedItem: String)->Void{
-        print("selectionHandler called")
-        
-    }
+    var searchTags: [String] = ["all"]
     
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
@@ -339,7 +334,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             "latitude": latitude,
             "longitude": longitude,
             "radius": "5000",
-            "tags": ["all"]
+            "tags": searchTags
         ]
         
         
@@ -358,9 +353,24 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         return jsonResult
     }
     
-    @IBAction func performTags(sender: UIBarButtonItem){
-        print("performTags")
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "searchTags" { // 2
+            let navigationController = segue.destinationViewController as! UINavigationController
+            let controller = navigationController.topViewController as! TagsController
+            controller.delegate = self
+            controller.resetTags(searchTags)
+        }
     }
+    
+    func tagsControllerDidCancel(controller: TagsController) {
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func tagsController(controller: TagsController, didFinishSelectingTags tags: [String]) {
+        searchTags = tags
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
