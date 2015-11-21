@@ -2,13 +2,15 @@ import UIKit
 import CoreLocation
 import MapKit
 
-class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate, TagsControllerDelegate {
+class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate,
+                            TagsControllerDelegate, LocationControllerDelegate {
     // holds the CLLocationManager instance created in viewDidAppear()
     var locationManager: CLLocationManager?
     var mapView: MKMapView!
     var startTime: CFAbsoluteTime! = nil
     var tag = 1
     var searchTags: [String] = ["all"]
+    var searchAddress = ""
     
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
@@ -359,6 +361,12 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             let controller = navigationController.topViewController as! TagsController
             controller.delegate = self
             controller.resetTags(searchTags)
+        } else if segue.identifier == "searchLocation" {
+            let navigationController = segue.destinationViewController as! UINavigationController
+            let controller = navigationController.topViewController as! LocationController
+            controller.setSearchLocation(searchAddress)
+
+            controller.delegate = self
         }
     }
     
@@ -371,6 +379,15 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         dismissViewControllerAnimated(true, completion: nil)
     }
     
+    func locationControllerDidCancel(controller: LocationController) {
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func locationController(controller: LocationController, didFinishSelectingLocation location: String) {
+        print("didFinishSelectingLocation: " + location)
+        searchAddress = location
+        dismissViewControllerAnimated(true, completion: nil)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
