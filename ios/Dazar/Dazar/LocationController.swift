@@ -93,7 +93,11 @@ class LocationController: UITableViewController {
         }
         let streetToks = streetAddr.componentsSeparatedByString(" ")
         let streetNo = streetToks[0]
-        let streetName = streetToks[1]
+        var streetName = streetToks[1]
+        for var i = 2; i < streetToks.count; ++i { // in case street name is made from more than one word - Bnei Ephraim
+            streetName.appendContentsOf(" ")
+            streetName.appendContentsOf(streetToks[i])
+        }
         
         self.streetNo.text = streetNo.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
         self.streetName.text = streetName.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())

@@ -2,6 +2,11 @@ import UIKit
 import CoreLocation
 import MapKit
 
+struct Coordinates {
+    var latitude: Double = 0.0
+    var longitude: Double = 0.0
+}
+
 class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate,
                             TagsControllerDelegate, LocationControllerDelegate {
     // holds the CLLocationManager instance created in viewDidAppear()
@@ -249,10 +254,54 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     func locationManager(manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]) {
             let last = locations.count - 1
-            //print("Latitude = \(locations[last].coordinate.latitude)")
-            //print("Longitude = \(locations[last].coordinate.longitude)")
             
-            addPinToMapView(locations[last].coordinate.latitude, lng: locations[last].coordinate.longitude)
+            if searchAddress.isEmpty { // use device location
+                addPinToMapView(locations[last].coordinate.latitude, lng: locations[last].coordinate.longitude)
+            } else {
+                let coords: Coordinates = address2Coordinates(searchAddress)
+                addPinToMapView(coords.latitude, lng: coords.longitude)
+            }
+    }
+    
+    func address2Coordinates(address: String) -> Coordinates {
+        var coord: Coordinates = Coordinates()
+        
+        let httpMethod = "POST"
+        let timeout = 15.0
+        let urlAsString = "http://dazar.io/getCoordinates"
+        let url = NSURL(string: urlAsString)
+        
+        let urlRequest = NSMutableURLRequest(URL: url!,
+            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
+            timeoutInterval: timeout)
+        urlRequest.HTTPMethod = httpMethod
+        
+        let request : [NSString: AnyObject] =
+        [
+            "address": address
+        ]
+        
+        
+        do {
+            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
+                options: .PrettyPrinted)
+            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
+        
+            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
+        
+            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
+            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
+            print(response)
+            let jsonResult: NSDictionary = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
+            let data: NSDictionary = jsonResult["data"]! as! NSDictionary
+            coord.latitude = data["lat"] as! Double
+            coord.longitude = data["lng"] as! Double
+            return coord
+        } catch {
+            
+        }
+        
+        return coord
     }
     
     func displayAlertWithTitle(title: String, message: String){
@@ -335,7 +384,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         [
             "latitude": latitude,
             "longitude": longitude,
-            "radius": "5000",
+            "radius": "500",
             "tags": searchTags
         ]
         
