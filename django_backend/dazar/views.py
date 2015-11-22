@@ -251,6 +251,38 @@ class DazarAPI:
 
         return HttpResponse(flat)
 
+    def removeVendorTweet(self, request):
+        performanceMessage = ''
+        timeEnterFunc = datetime.datetime.now()
+
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'removeVendorTweet', invalid)))
+        self._doLog('DEBUG', 'removeVendorTwet', request.body)
+        body = json.loads(request.body)
+        vendorId = body['vendorId']
+
+        timeRemoveVendorTweet = datetime.datetime.now()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeRemoveVendorTweet)
+
+        try:
+            tweet = Tweets.objects.filter(vendorId = vendorId).delete()
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','removeVendorTweet', 'tweet for vendorId <' + vendorId + '> was not found.')))
+
+        timeMakeResponse = datetime.datetime.now()
+        performanceMessage += self._logGather('removeVendorTweet', timeRemoveVendorTweet, timeMakeResponse)
+
+        response = {"vendorId": vendorId}
+        flat = json.dumps(self._makeReturn('OK', 'removeVendorTweet', response))
+
+        timeExitFunc = datetime.datetime.now()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+        return HttpResponse(flat)
+
     def getVendor(self, request):
         performanceMessage = ''
         timeEnterFunc = datetime.datetime.now()
