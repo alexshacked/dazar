@@ -1,5 +1,6 @@
 # Django settings for django_backend project.
 import os
+from DazarFormatter import DazarFormatter
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -129,11 +130,13 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
+            '()' : DazarFormatter,
             'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
             'datefmt' : "%d/%b/%Y %H:%M:%S"
         },

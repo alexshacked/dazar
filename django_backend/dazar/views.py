@@ -12,14 +12,44 @@ import urllib2
 import json
 import logging
 import datetime
+from pytz import timezone
+
+
+###################### LOGGING ##############################################
+
+def posix2local(timestamp, tz=timezone('Israel')):
+    """Seconds since the epoch -> local time as an aware datetime object."""
+    return datetime.datetime.fromtimestamp(timestamp, tz)
+
+class Formatter(logging.Formatter):
+    def converter(self, timestamp):
+        return posix2local(timestamp)
+
+    def formatTime(self, record, datefmt=None):
+        dt = self.converter(record.created)
+        if datefmt:
+            s = dt.strftime(datefmt)
+        else:
+            t = dt.strftime(self.default_time_format)
+            s = self.default_msec_format % (t, record.msecs)
+        return s
+
 logger = logging.getLogger(__name__)
+#handler = logging.FileHandler('/var/log/uwsgi/django.log')
+#handler.setFormatter(Formatter("%(asctime)s %(message)s", "%Y-%m-%dT%H:%M:%S%z"))
+#for hdlr in logger.handlers:  # remove all old handlers
+#   logger.removeHandler(hdlr)
+#logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+
+###################### LOGGING ##############################################
 
 'The entry point to Dazar backend'
 class DazarAPI:
     def registerVendor(self, request):
         # ingest request
         performanceMessage = ''
-        timeEnterFunc = datetime.datetime.now()
+        timeEnterFunc = self.getNow()
 
         invalid = self._validateRequest(request)
         if invalid is not None:
@@ -35,12 +65,12 @@ class DazarAPI:
         # get coordinates for the business location
         formatted_address = self._makeGoogleAddress(body['address'])
 
-        timeStartGoogle = datetime.datetime.now()
+        timeStartGoogle = self.getNow()
         performanceMessage += self._logGather('parsing request', timeEnterFunc, timeStartGoogle)
 
         geocode = self._geocodeFromGoogle(formatted_address, "getCoordinates")
 
-        timeEndGoogle = datetime.datetime.now()
+        timeEndGoogle = self.getNow()
         performanceMessage += self._logGather('geocode from google', timeStartGoogle, timeEndGoogle)
 
         if geocode['status'] == 'FAIL':
@@ -54,12 +84,12 @@ class DazarAPI:
         except Exception as e:
             pass; # this is good actually. means the object does not exist
 
-        timeMongoGet = datetime.datetime.now()
+        timeMongoGet = self.getNow()
         performanceMessage += self._logGather('mongo get', timeEndGoogle, timeMongoGet)
 
         # insert the new vendor in mongodb
         pt = Point(type = 'Point', coordinates = [float(geocode['data']['lng']), float(geocode['data']['lat'])] )
-        now = datetime.datetime.now()
+        now = self.getNow()
         try:
             doc = Vendors.objects.create(name =body['vendor'], address=body['address'],
                                          phone=body['phone'], tags=body['tags'],location=pt, registrationTime = now)
@@ -67,7 +97,7 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','registerVendor', 'Failed on access to MongoDb  ------- ' + e.message)))
 
-        timeMongoPut = datetime.datetime.now()
+        timeMongoPut = self.getNow()
         performanceMessage += self._logGather('mongo put', timeMongoGet, timeMongoPut)
 
         # respond
@@ -78,7 +108,7 @@ class DazarAPI:
         response['coordinates']['longitude'] = float(geocode['data']['lng'])
         flat = json.dumps(self._makeReturn('OK', 'registerVendor', response))
 
-        timeMadeResponse = datetime.datetime.now()
+        timeMadeResponse = self.getNow()
         performanceMessage += self._logGather('made response', timeMongoPut, timeMadeResponse)
         performanceMessage += self._logGather('total', timeEnterFunc, timeMadeResponse)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
@@ -87,7 +117,7 @@ class DazarAPI:
 
     def addTweet(self, request):
         performanceMessage = ''
-        timeEnterFunc = datetime.datetime.now()
+        timeEnterFunc = self.getNow()
 
         # ingest request
         invalid = self._validateRequest(request)
@@ -96,7 +126,7 @@ class DazarAPI:
         self._doLog('DEBUG', 'addTweet', request.body)
         body = json.loads(request.body)
 
-        timeGetVendor = datetime.datetime.now()
+        timeGetVendor = self.getNow()
         performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetVendor)
 
         # get the vendor data from the vendors table in mongodb
@@ -105,7 +135,7 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','addTweet', 'vendorId <' + body['vendorId'] + '> is not registered')))
 
-        timeGetTweet = datetime.datetime.now()
+        timeGetTweet = self.getNow()
         performanceMessage += self._logGather('get vendor data', timeGetVendor, timeGetTweet)
 
         # find out if this vendor creates a new tweet or updates an existing one
@@ -117,12 +147,12 @@ class DazarAPI:
                 return HttpResponse(json.dumps(self._makeReturn('FAIL','addTweet', 'mongodb is down')))
             newTweet = True
 
-        timeUpdateTweet = datetime.datetime.now()
+        timeUpdateTweet = self.getNow()
         performanceMessage += self._logGather('try to get (if exists) tweet data', timeGetTweet, timeUpdateTweet)
 
         # create or update the tweet
         if newTweet:
-            now = datetime.datetime.now()
+            now = self.getNow()
             try:
                 doc = Tweets.objects.create(message =body['tweet'], vendorId = body['vendorId'], vendorName = vendor.name, vendorAddress = vendor.address,
                                          vendorPhone = vendor.phone, vendorTags = vendor.tags, vendorLocation = vendor.location,
@@ -138,12 +168,12 @@ class DazarAPI:
             except Exception as e:
                 return HttpResponse(json.dumps(self._makeReturn('FAIL','addTweet', 'Failed on access to MongoDb  ------- ' + e.message)))
 
-        timeMakeResponse = datetime.datetime.now()
+        timeMakeResponse = self.getNow()
         performanceMessage += self._logGather('create (or update) tweet', timeUpdateTweet, timeMakeResponse)
 
         flat = json.dumps(self._makeReturn('OK', 'addTweet', 'OK'))
 
-        timeExitFunc = datetime.datetime.now()
+        timeExitFunc = self.getNow()
         performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
         performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
@@ -152,7 +182,7 @@ class DazarAPI:
 
     def getTweets(self, request):
         performanceMessage = ''
-        timeEnterFunc = datetime.datetime.now()
+        timeEnterFunc = self.getNow()
 
         invalid = self._validateRequest(request)
         if invalid is not None:
@@ -177,7 +207,7 @@ class DazarAPI:
 
         query = { 'vendorLocation': { '$near': {'$geometry': {'type':"Point", 'coordinates': [lng, lat]}, '$maxDistance': maxDistance } } }
 
-        timeQueryTweets = datetime.datetime.now()
+        timeQueryTweets = self.getNow()
         performanceMessage += self._logGather('parsing request', timeEnterFunc, timeQueryTweets)
 
         try:
@@ -186,19 +216,19 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getTweets', 'Failed on access to MongoDb  ------- ' + e.message)))
 
-        timeMakeResponse = datetime.datetime.now()
+        timeMakeResponse = self.getNow()
         performanceMessage += self._logGather('get tweets inside radius', timeQueryTweets, timeMakeResponse)
 
         response = [self._responseTweet(q) for q in queryset if not self._filterByTag(patronTags, q.vendorTags)]
         flat = json.dumps(self._makeReturn('OK', 'getTweets', response))
 
-        timeUpdateBuyer = datetime.datetime.now()
+        timeUpdateBuyer = self.getNow()
         performanceMessage += self._logGather('make response', timeMakeResponse, timeUpdateBuyer)
 
         if buyerId and pseudoBuyer:
             self.updateBuyer(buyerId, pseudoBuyer, body['latitude'], body['longitude'], patronTags)
 
-        timeExitFunc = datetime.datetime.now()
+        timeExitFunc = self.getNow()
         performanceMessage += self._logGather('update buyer', timeUpdateBuyer, timeExitFunc)
         performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
@@ -211,7 +241,7 @@ class DazarAPI:
 
     def getVendorTweet(self, request):
         performanceMessage = ''
-        timeEnterFunc = datetime.datetime.now()
+        timeEnterFunc = self.getNow()
 
         invalid = self._validateRequest(request)
         if invalid is not None:
@@ -220,7 +250,7 @@ class DazarAPI:
         body = json.loads(request.body)
         vendorId = body['vendorId']
 
-        timeGetVendorTweet = datetime.datetime.now()
+        timeGetVendorTweet = self.getNow()
         performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetVendorTweet)
 
         try:
@@ -228,13 +258,13 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','getVendorTweet', 'tweet for vendorId <' + vendorId + '> was not found.')))
 
-        timeMakeResponse = datetime.datetime.now()
+        timeMakeResponse = self.getNow()
         performanceMessage += self._logGather('getVendorTweet', timeGetVendorTweet, timeMakeResponse)
 
         response = self._responseTweet(tweet)
         flat = json.dumps(self._makeReturn('OK', 'getVendorTweet', response))
 
-        timeExitFunc = datetime.datetime.now()
+        timeExitFunc = self.getNow()
         performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
         performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
@@ -243,14 +273,14 @@ class DazarAPI:
 
     def getAllVendorTweets(self, request):
         performanceMessage = ''
-        timeEnterFunc = datetime.datetime.now()
+        timeEnterFunc = self.getNow()
 
         invalid = self._validateRequest(request)
         if invalid is not None:
             return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getAllVendorTweets', invalid)))
         self._doLog('DEBUG', 'getAllVendorTweets', request.body)
 
-        timeGetAllVendorTweets = datetime.datetime.now()
+        timeGetAllVendorTweets = self.getNow()
         performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetAllVendorTweets)
 
         try:
@@ -259,13 +289,13 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','timeGetAllVendorTweets', 'Failed on access to MongoDb  ------- ' + e.message)))
 
-        timeMakeResponse = datetime.datetime.now()
+        timeMakeResponse = self.getNow()
         performanceMessage += self._logGather('getAllVendorTweets', timeGetAllVendorTweets, timeMakeResponse)
 
         response = self._responseAllTweets(queryset)
         flat = json.dumps(self._makeReturn('OK', 'getAllVendorTweets', response))
 
-        timeExitFunc = datetime.datetime.now()
+        timeExitFunc = self.getNow()
         performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
         performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
@@ -274,7 +304,7 @@ class DazarAPI:
 
     def removeVendorTweet(self, request):
         performanceMessage = ''
-        timeEnterFunc = datetime.datetime.now()
+        timeEnterFunc = self.getNow()
 
         invalid = self._validateRequest(request)
         if invalid is not None:
@@ -283,7 +313,7 @@ class DazarAPI:
         body = json.loads(request.body)
         vendorId = body['vendorId']
 
-        timeRemoveVendorTweet = datetime.datetime.now()
+        timeRemoveVendorTweet = self.getNow()
         performanceMessage += self._logGather('parsing request', timeEnterFunc, timeRemoveVendorTweet)
 
         try:
@@ -291,13 +321,13 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','removeVendorTweet', 'tweet for vendorId <' + vendorId + '> was not found.')))
 
-        timeMakeResponse = datetime.datetime.now()
+        timeMakeResponse = self.getNow()
         performanceMessage += self._logGather('removeVendorTweet', timeRemoveVendorTweet, timeMakeResponse)
 
         response = {"vendorId": vendorId}
         flat = json.dumps(self._makeReturn('OK', 'removeVendorTweet', response))
 
-        timeExitFunc = datetime.datetime.now()
+        timeExitFunc = self.getNow()
         performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
         performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
@@ -306,7 +336,7 @@ class DazarAPI:
 
     def getVendor(self, request):
         performanceMessage = ''
-        timeEnterFunc = datetime.datetime.now()
+        timeEnterFunc = self.getNow()
 
         invalid = self._validateRequest(request)
         if invalid is not None:
@@ -315,7 +345,7 @@ class DazarAPI:
         body = json.loads(request.body)
         vendorId = body['vendorId']
 
-        timeGetVendor = datetime.datetime.now()
+        timeGetVendor = self.getNow()
         performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetVendor)
 
         try:
@@ -323,13 +353,13 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','getVendor', 'vendorId <' + body['vendorId'] + '> is not registered')))
 
-        timeMakeResponse = datetime.datetime.now()
+        timeMakeResponse = self.getNow()
         performanceMessage += self._logGather('getVendor by id', timeGetVendor, timeMakeResponse)
 
         response = self._responseVendor(vendor)
         flat = json.dumps(self._makeReturn('OK', 'getVendor', response))
 
-        timeExitFunc = datetime.datetime.now()
+        timeExitFunc = self.getNow()
         performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
         performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
@@ -338,7 +368,7 @@ class DazarAPI:
 
     def getAllVendors(self, request):
         performanceMessage = ''
-        timeEnterFunc = datetime.datetime.now()
+        timeEnterFunc = self.getNow()
 
         invalid = self._validateRequest(request)
         if invalid is not None:
@@ -346,7 +376,7 @@ class DazarAPI:
         self._doLog('DEBUG', 'getAllVendors', request.body)
         body = json.loads(request.body)
 
-        timeGetAllVendors = datetime.datetime.now()
+        timeGetAllVendors = self.getNow()
         performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetAllVendors)
 
         try:
@@ -355,13 +385,13 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','getAllVendors', 'Failed on access to MongoDb  ------- ' + e.message)))
 
-        timeMakeResponse = datetime.datetime.now()
+        timeMakeResponse = self.getNow()
         performanceMessage += self._logGather('getAllVendors', timeGetAllVendors, timeMakeResponse)
 
         response = self._responseAllVendors(queryset)
         flat = json.dumps(self._makeReturn('OK', 'getAllVendors', response))
 
-        timeExitFunc = datetime.datetime.now()
+        timeExitFunc = self.getNow()
         performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
         performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
@@ -370,7 +400,7 @@ class DazarAPI:
 
     def upvote(self, request):
         performanceMessage = ''
-        timeEnterFunc = datetime.datetime.now()
+        timeEnterFunc = self.getNow()
 
         # ingest request
         invalid = self._validateRequest(request)
@@ -380,7 +410,7 @@ class DazarAPI:
         body = json.loads(request.body)
         vendorId = body['vendorId']
 
-        timeGetVendor = datetime.datetime.now()
+        timeGetVendor = self.getNow()
         performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetVendor)
 
         # get the vendor data from the vendors table in mongodb
@@ -389,7 +419,7 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','upvote', 'vendorId <' + vendorId + '> is not registered')))
 
-        timeUpdateTweet = datetime.datetime.now()
+        timeUpdateTweet = self.getNow()
         performanceMessage += self._logGather('check that vendor exists', timeGetVendor, timeUpdateTweet)
 
         # get the tweet from mongo
@@ -400,12 +430,12 @@ class DazarAPI:
         except Exception as e:
                 return HttpResponse(json.dumps(self._makeReturn('FAIL','upvote', 'failed fetching the tweet:  ' + e.message)))
 
-        timeMakeResponse = datetime.datetime.now()
+        timeMakeResponse = self.getNow()
         performanceMessage += self._logGather('update tweet', timeUpdateTweet, timeMakeResponse)
 
         flat = json.dumps(self._makeReturn('OK', 'upvote', 'OK'))
 
-        timeExitFunc = datetime.datetime.now()
+        timeExitFunc = self.getNow()
         performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
         performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
@@ -414,7 +444,7 @@ class DazarAPI:
 
     def downvote(self, request):
         performanceMessage = ''
-        timeEnterFunc = datetime.datetime.now()
+        timeEnterFunc = self.getNow()
 
         # ingest request
         invalid = self._validateRequest(request)
@@ -424,7 +454,7 @@ class DazarAPI:
         body = json.loads(request.body)
         vendorId = body['vendorId']
 
-        timeGetVendor = datetime.datetime.now()
+        timeGetVendor = self.getNow()
         performanceMessage += self._logGather('parsing request', timeEnterFunc, timeGetVendor)
 
         # get the vendor data from the vendors table in mongodb
@@ -433,7 +463,7 @@ class DazarAPI:
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','downvote', 'vendorId <' + vendorId + '> is not registered')))
 
-        timeUpdateTweet = datetime.datetime.now()
+        timeUpdateTweet = self.getNow()
         performanceMessage += self._logGather('check that vendor exists', timeGetVendor, timeUpdateTweet)
 
         # get the tweet from mongo
@@ -444,12 +474,12 @@ class DazarAPI:
         except Exception as e:
                 return HttpResponse(json.dumps(self._makeReturn('FAIL','upvote', 'failed fetching the tweet:  ' + e.message)))
 
-        timeMakeResponse = datetime.datetime.now()
+        timeMakeResponse = self.getNow()
         performanceMessage += self._logGather('update tweet', timeUpdateTweet, timeMakeResponse)
 
         flat = json.dumps(self._makeReturn('OK', 'downvote', 'OK'))
 
-        timeExitFunc = datetime.datetime.now()
+        timeExitFunc = self.getNow()
         performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
         performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
@@ -652,6 +682,9 @@ class DazarAPI:
     def _responseAllVendors(self, queryset):
         res = map(self._responseVendor, queryset)
         return res
+
+    def getNow(self):
+        return datetime.datetime.now(tz=timezone('Israel'))
 
 
 
