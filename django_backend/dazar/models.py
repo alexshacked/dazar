@@ -30,7 +30,13 @@ class Tweets(models.Model):
 
 class Buyers(models.Model):
     buyerId = models.CharField(max_length=200)
-    pseudoBuyer = models.BooleanField() # a buyer for shops at a location differrent from his physical location
+    buyerLocation  = EmbeddedModelField('Point')
+    buyerTags= ListField()
+    creationTime = models.DateTimeField(auto_now=True, auto_now_add=True)
+    objects = MongoDBManager()
+
+class PseudoBuyers(models.Model):
+    buyerId = models.CharField(max_length=200)
     buyerLocation  = EmbeddedModelField('Point')
     buyerTags= ListField()
     creationTime = models.DateTimeField()

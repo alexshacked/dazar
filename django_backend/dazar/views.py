@@ -5,6 +5,8 @@ from models import Point
 from models import Vendors
 from models import Locations
 from models import Tweets
+from models import Buyers
+from models import PseudoBuyers
 from pymongo.errors import ServerSelectionTimeoutError
 
 import re
@@ -225,19 +227,67 @@ class DazarAPI:
         timeUpdateBuyer = self.getNow()
         performanceMessage += self._logGather('make response', timeMakeResponse, timeUpdateBuyer)
 
-        if buyerId and pseudoBuyer:
-            self.updateBuyer(buyerId, pseudoBuyer, body['latitude'], body['longitude'], patronTags)
-
         timeExitFunc = self.getNow()
         performanceMessage += self._logGather('update buyer', timeUpdateBuyer, timeExitFunc)
         performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
 
+        if buyerId and pseudoBuyer:
+            self.updateBuyer(buyerId, pseudoBuyer, body['latitude'], body['longitude'], patronTags)
+
         return HttpResponse(flat)
 
     def updateBuyer(self, buyerId, pseudoBuyer, latitude, longitude, tags):
+        performanceMessage = ''
+        timeEnterFunc = self.getNow()
+
         msg = 'updateBuyer - buyerId: %s, pseudoBuyer: %s, latitude: %s, longitude: %s, tags: %s' % (buyerId, pseudoBuyer, latitude, longitude, ",".join(tags))
         self._doLog('DEBUG', msg)
+
+        isPseudo = bool(int(pseudoBuyer))
+        if not isPseudo:
+            # find out if this is a new buyer or an existing one
+            newBuyer = False
+            try:
+                buyer = Buyers.objects.get(buyerId = buyerId)
+            except Exception as e:
+                if type(e) is ServerSelectionTimeoutError:
+                    return HttpResponse(json.dumps(self._makeReturn('FAIL','find Buyer', 'mongodb is down')))
+                newBuyer = True
+
+            timeUpdateBuyers = self.getNow()
+            performanceMessage += self._logGather('check if this buyer exists', timeEnterFunc, timeUpdateBuyers)
+
+            # create or update the tweet
+            pt = Point(type = 'Point', coordinates = [float(longitude), float(latitude)] )
+            now = self.getNow()
+            if newBuyer:
+                try:
+                    doc = Buyers.objects.create(buyerId = buyerId, buyerLocation = pt,
+                                             buyerTags = tags, creationTime = now)
+                    doc.save()
+                except Exception as e:
+                    return HttpResponse(json.dumps(self._makeReturn('FAIL','updateBuyer', 'Failed on access to MongoDb  ------- ' + e.message)))
+            else: # update
+                try:
+                    buyer.buyerLocation = pt
+                    buyer.buyerId = buyerId
+                    buyer.creationTime = now
+                    buyer.buyerTags = tags
+                    buyer.save()
+                except Exception as e:
+                    return HttpResponse(json.dumps(self._makeReturn('FAIL','update', 'Failed on access to MongoDb  ------- ' + e.message)))
+
+            timeMakeResponse = self.getNow()
+            performanceMessage += self._logGather('create (or update) buyer', timeUpdateBuyers, timeMakeResponse)
+
+            flat = json.dumps(self._makeReturn('OK', 'updateBuyer', 'OK'))
+
+            timeExitFunc = self.getNow()
+            performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+            performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+            self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
 
     def getVendorTweet(self, request):
         performanceMessage = ''
