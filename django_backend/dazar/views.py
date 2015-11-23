@@ -160,10 +160,21 @@ class DazarAPI:
         self._doLog('DEBUG', 'getTweets', request.body)
         body = json.loads(request.body)
 
+        # extract getTweets arguments from the request
         patronTags = body['tags']
         maxDistance = int(body['radius'])
         lat = float(body['latitude'])
         lng = float(body['longitude'])
+
+        # extract updateBuyer arguments from the request
+        buyerId = None
+        if "buyerId" in body:
+            buyerId = body["buyerId"]
+        pseudoBuyer = None
+        if "pseudoBuyer" in body:
+            pseudoBuyer = body["pseudoBuyer"]
+
+
         query = { 'vendorLocation': { '$near': {'$geometry': {'type':"Point", 'coordinates': [lng, lat]}, '$maxDistance': maxDistance } } }
 
         timeQueryTweets = datetime.datetime.now()
@@ -181,12 +192,22 @@ class DazarAPI:
         response = [self._responseTweet(q) for q in queryset if not self._filterByTag(patronTags, q.vendorTags)]
         flat = json.dumps(self._makeReturn('OK', 'getTweets', response))
 
+        timeUpdateBuyer = datetime.datetime.now()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeUpdateBuyer)
+
+        if buyerId and pseudoBuyer:
+            self.updateBuyer(buyerId, pseudoBuyer, body['latitude'], body['longitude'], patronTags)
+
         timeExitFunc = datetime.datetime.now()
-        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('update buyer', timeUpdateBuyer, timeExitFunc)
         performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
 
         return HttpResponse(flat)
+
+    def updateBuyer(self, buyerId, pseudoBuyer, latitude, longitude, tags):
+        msg = 'updateBuyer - buyerId: %s, pseudoBuyer: %s, latitude: %s, longitude: %s, tags: %s' % (buyerId, pseudoBuyer, latitude, longitude, ",".join(tags))
+        self._doLog('DEBUG', msg)
 
     def getVendorTweet(self, request):
         performanceMessage = ''

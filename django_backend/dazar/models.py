@@ -28,6 +28,14 @@ class Tweets(models.Model):
     votes = models.IntegerField()
     objects = MongoDBManager()
 
+class Buyers(models.Model):
+    buyerId = models.CharField(max_length=200)
+    pseudoBuyer = models.BooleanField() # a buyer for shops at a location differrent from his physical location
+    buyerLocation  = EmbeddedModelField('Point')
+    buyerTags= ListField()
+    creationTime = models.DateTimeField()
+    objects = MongoDBManager()
+
 class Locations(models.Model):
     address = models.CharField(max_length=200)
     point = EmbeddedModelField('Point')

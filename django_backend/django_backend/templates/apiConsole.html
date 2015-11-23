@@ -92,6 +92,12 @@
         <input type="checkbox" name="boxGetMedia" value=1 > Media
         <input type="checkbox" name="boxGetSports" value=1 > Sports
      </p>
+     <p>
+        OPTIONAL:   -----  Buyer ID (a cellular device UDID):
+        <input type="text" name="txtBuyerId" size="50" maxlength="50" style="background-color:Azure;border-color:Azure"/>
+        Pseudo Buyer:
+        <input type="text" name="txtPseudoBuyer" size="20" maxlength="20" style="background-color:Azure;border-color:Azure"/>
+    </p>
      </fieldset>
     <!--&nbsp><-->
     <fieldset>
@@ -526,12 +532,20 @@
         var longitude =  document.form1.txtLongitude.value;
         var radius =  document.form1.txtRadius.value;
         var tags = getTweetsTags();
+        var buyerId = document.form1.txtBuyerId.value;
+        var pseudoBuyer = document.form1.txtPseudoBuyer.value;
 
         var body = {};
         body.latitude = latitude;
         body.longitude = longitude;
         body.radius = radius;
         body.tags = tags;
+        if (buyerId != "") {
+            body.buyerId = buyerId
+        }
+        if (pseudoBuyer != "") {
+            body.pseudoBuyer = pseudoBuyer
+        }
         var flat = JSON.stringify(body, null, 2);
 
         showRequest(uri, flat);
@@ -648,6 +662,8 @@
 
     function onInit() {
         document.form1.txtUri.value = window.location.host;
+        document.form1.txtBuyerId.value = 'E9AA519D-A484-487A-B6D5-EB2ED0E29001';
+        document.form1.txtPseudoBuyer.value = 0
     }
 
     buttonRegister.addEventListener("click", OnRegister);

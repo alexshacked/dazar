@@ -370,6 +370,8 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     }
     
     func doGetTweets(latitude: String, longitude: String) throws -> NSDictionary {
+        let id = UIDevice.currentDevice().identifierForVendor?.UUIDString
+        
         let httpMethod = "POST"
         let timeout = 15.0
         let urlAsString = "http://dazar.io/getTweets"
