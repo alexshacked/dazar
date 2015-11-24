@@ -33,6 +33,7 @@ class DazarAPI:
         t.start()
 
     def threadFunc(self):
+        # self._doLog(level = 'DEBUG', cmd = "THREAD FUNCTION STARTED")
         while True:
             time.sleep(0.1)
             try:
@@ -277,10 +278,13 @@ class DazarAPI:
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
 
         if buyerId and pseudoBuyer:
+            self.updateBuyer(buyerId, pseudoBuyer, body['latitude'], body['longitude'], patronTags)
+            '''
             # instead of calling updateBuyer() directly we do it on a separate thread - trying to increase backend responsivity
             dataQueue.put({'func': self.updateBuyer, 'buyerId': buyerId,
                            'pseudoBuyer': pseudoBuyer, 'latitude': body['latitude'], 'longitude': body['longitude'],
                            'tags': patronTags})
+            '''
 
         return HttpResponse(flat)
 
