@@ -16,38 +16,32 @@ import logging
 import datetime
 from pytz import timezone
 
-
-###################### LOGGING ##############################################
-
-def posix2local(timestamp, tz=timezone('Israel')):
-    """Seconds since the epoch -> local time as an aware datetime object."""
-    return datetime.datetime.fromtimestamp(timestamp, tz)
-
-class Formatter(logging.Formatter):
-    def converter(self, timestamp):
-        return posix2local(timestamp)
-
-    def formatTime(self, record, datefmt=None):
-        dt = self.converter(record.created)
-        if datefmt:
-            s = dt.strftime(datefmt)
-        else:
-            t = dt.strftime(self.default_time_format)
-            s = self.default_msec_format % (t, record.msecs)
-        return s
-
 logger = logging.getLogger(__name__)
-#handler = logging.FileHandler('/var/log/uwsgi/django.log')
-#handler.setFormatter(Formatter("%(asctime)s %(message)s", "%Y-%m-%dT%H:%M:%S%z"))
-#for hdlr in logger.handlers:  # remove all old handlers
-#   logger.removeHandler(hdlr)
-#logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
+###################### Thread for the updateBuyer() mrthod ##############################################
+import threading
+import Queue
+import time
 
-###################### LOGGING ##############################################
+dataQueue = Queue.Queue()
+###################### Thread ##########################################################################
 
 'The entry point to Dazar backend'
 class DazarAPI:
+    def __init__(self):
+        t = threading.Thread(target=self.threadFunc)
+        t.daemon = True
+        t.start()
+
+    def threadFunc(self):
+        while True:
+            time.sleep(0.1)
+            try:
+                data = dataQueue.get(block=False)
+            except Exception as e:
+                a = 1
+            else: # look at dataQueue.put to see how the dataQueue is loaded
+                data['func'](data['buyerId'], data['pseudoBuyer'], data['latitude'], data['longitude'], data['tags'])
+
     def registerVendor(self, request):
         # ingest request
         performanceMessage = ''
@@ -182,6 +176,9 @@ class DazarAPI:
 
         return HttpResponse(flat)
 
+    def getBuyer(self, request):
+        self._doLog("DEBUG", "called getBuyers")
+
     def getTweets(self, request):
         performanceMessage = ''
         timeEnterFunc = self.getNow()
@@ -233,13 +230,16 @@ class DazarAPI:
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
 
         if buyerId and pseudoBuyer:
-            self.updateBuyer(buyerId, pseudoBuyer, body['latitude'], body['longitude'], patronTags)
+            # instead of calling updateBuyer() directly we do it on a separate thread - trying to increase backend responsivity
+            dataQueue.put({'func': self.updateBuyer, 'buyerId': buyerId,
+                           'pseudoBuyer': pseudoBuyer, 'latitude': body['latitude'], 'longitude': body['longitude'],
+                           'tags': patronTags})
 
         return HttpResponse(flat)
 
     def updateBuyer(self, buyerId, pseudoBuyer, latitude, longitude, tags):
         msg = 'updateBuyer - buyerId: %s, pseudoBuyer: %s, latitude: %s, longitude: %s, tags: %s' % (buyerId, pseudoBuyer, latitude, longitude, ",".join(tags))
-        self._doLog('DEBUG', msg)
+        print(msg)
 
         isPseudo = bool(int(pseudoBuyer))
         if not isPseudo:
@@ -255,8 +255,8 @@ class DazarAPI:
         The PseudoBuyers are used only for demo purposes where one presentor with one device needs to
         simulate many buyers in order to show them on the map in the vendor screen around the vendor.
         In a production situation we still enable the buyer to browse for shops in random map locations.
-        In this way the buyer gets to see if it is worthwhile to visit those places. That is why enable
-        random browsing but we do not show the PseudoBuyers on the vendor map.
+        In this way the buyer gets to see if it is worthwhile to visit those places. That is why we enable
+        random browsing but on the other hand, in production we do not show the PseudoBuyers on the vendor map.
         '''
 
         performanceMessage = ''
