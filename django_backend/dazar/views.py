@@ -238,56 +238,104 @@ class DazarAPI:
         return HttpResponse(flat)
 
     def updateBuyer(self, buyerId, pseudoBuyer, latitude, longitude, tags):
-        performanceMessage = ''
-        timeEnterFunc = self.getNow()
-
         msg = 'updateBuyer - buyerId: %s, pseudoBuyer: %s, latitude: %s, longitude: %s, tags: %s' % (buyerId, pseudoBuyer, latitude, longitude, ",".join(tags))
         self._doLog('DEBUG', msg)
 
         isPseudo = bool(int(pseudoBuyer))
         if not isPseudo:
-            # find out if this is a new buyer or an existing one
-            newBuyer = False
+            self.doUpdateBuyer(buyerId, latitude, longitude, tags)
+        else:
+            self.doUpdatePseudoBuyer(buyerId, latitude, longitude, tags)
+
+    def doUpdatePseudoBuyer(self, buyerId, latitude, longitude, tags):
+        '''
+        a PseudoBuyer is created when a buyer chooses to browse for shops in some random map location
+        instead of browsing around his current physical location. The presence of pseudoBuyers is kept
+        in the PseudoBuyers collection instead of the Buyers collection where the physical buyers are put.
+        The PseudoBuyers are used only for demo purposes where one presentor with one device needs to
+        simulate many buyers in order to show them on the map in the vendor screen around the vendor.
+        In a production situation we still enable the buyer to browse for shops in random map locations.
+        In this way the buyer gets to see if it is worthwhile to visit those places. That is why enable
+        random browsing but we do not show the PseudoBuyers on the vendor map.
+        '''
+
+        performanceMessage = ''
+        timeEnterFunc = self.getNow()
+
+        pseudoRadius = 40
+        lat = float(latitude)
+        lng = float(longitude)
+        query = {
+                    'buyerLocation': { '$near': {'$geometry': {'type':"Point", 'coordinates': [lng, lat]}, '$maxDistance': pseudoRadius } },
+                    'buyerId': buyerId
+                }
+        exist = True
+        try:
+            queryset = PseudoBuyers.objects.raw_query(query)
+            len(queryset) # to catch nonexist
+        except Exception as e:
+            exist = False
+
+
+        timeQueryPseudoBuyer = self.getNow()
+        performanceMessage += self._logGather('query pseudoBuyer inside radius', timeEnterFunc, timeQueryPseudoBuyer)
+        if exist:
+            for q in queryset: # there is place for only one pseudoBuyer on a pseudoRadius around a given map location
+                q.delete()
+
+        pt = Point(type = 'Point', coordinates = [lng, lat] )
+        now = self.getNow()
+        try:
+            doc = PseudoBuyers.objects.create(buyerId = buyerId, buyerLocation = pt,
+                                         buyerTags = tags, creationTime = now)
+            doc.save()
+        except Exception as e:
+            self._doLog('ERROR', 'updateBuyer: Failed on access to MongoDb  ------- ' + e.message)
+
+        timeFinished = self.getNow()
+        performanceMessage += self._logGather('query pseudoBuyer and create new pseudoBuyer', timeQueryPseudoBuyer, timeFinished)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeFinished)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+    def doUpdateBuyer(self, buyerId, latitude, longitude, tags):
+        performanceMessage = ''
+        timeEnterFunc = self.getNow()
+
+        newBuyer = False
+        try:
+            buyer = Buyers.objects.get(buyerId = buyerId)
+        except Exception as e:
+            if type(e) is ServerSelectionTimeoutError:
+                return HttpResponse(json.dumps(self._makeReturn('FAIL','find Buyer', 'mongodb is down')))
+            newBuyer = True
+
+        timeUpdateBuyers = self.getNow()
+        performanceMessage += self._logGather('check if this buyer exists', timeEnterFunc, timeUpdateBuyers)
+
+        # create or update the buyer
+        pt = Point(type = 'Point', coordinates = [float(longitude), float(latitude)] )
+        now = self.getNow()
+        if newBuyer:
             try:
-                buyer = Buyers.objects.get(buyerId = buyerId)
+                doc = Buyers.objects.create(buyerId = buyerId, buyerLocation = pt,
+                                         buyerTags = tags, creationTime = now)
+                doc.save()
             except Exception as e:
-                if type(e) is ServerSelectionTimeoutError:
-                    return HttpResponse(json.dumps(self._makeReturn('FAIL','find Buyer', 'mongodb is down')))
-                newBuyer = True
+                return HttpResponse(json.dumps(self._makeReturn('FAIL','updateBuyer', 'Failed on access to MongoDb  ------- ' + e.message)))
+        else: # update
+            try:
+                buyer.buyerLocation = pt
+                buyer.buyerId = buyerId
+                buyer.creationTime = now
+                buyer.buyerTags = tags
+                buyer.save()
+            except Exception as e:
+                return HttpResponse(json.dumps(self._makeReturn('FAIL','update', 'Failed on access to MongoDb  ------- ' + e.message)))
 
-            timeUpdateBuyers = self.getNow()
-            performanceMessage += self._logGather('check if this buyer exists', timeEnterFunc, timeUpdateBuyers)
-
-            # create or update the tweet
-            pt = Point(type = 'Point', coordinates = [float(longitude), float(latitude)] )
-            now = self.getNow()
-            if newBuyer:
-                try:
-                    doc = Buyers.objects.create(buyerId = buyerId, buyerLocation = pt,
-                                             buyerTags = tags, creationTime = now)
-                    doc.save()
-                except Exception as e:
-                    return HttpResponse(json.dumps(self._makeReturn('FAIL','updateBuyer', 'Failed on access to MongoDb  ------- ' + e.message)))
-            else: # update
-                try:
-                    buyer.buyerLocation = pt
-                    buyer.buyerId = buyerId
-                    buyer.creationTime = now
-                    buyer.buyerTags = tags
-                    buyer.save()
-                except Exception as e:
-                    return HttpResponse(json.dumps(self._makeReturn('FAIL','update', 'Failed on access to MongoDb  ------- ' + e.message)))
-
-            timeMakeResponse = self.getNow()
-            performanceMessage += self._logGather('create (or update) buyer', timeUpdateBuyers, timeMakeResponse)
-
-            flat = json.dumps(self._makeReturn('OK', 'updateBuyer', 'OK'))
-
-            timeExitFunc = self.getNow()
-            performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
-            performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
-            self._doLog(level = 'DEBUG', cmd = performanceMessage)
-
+        timeExitFunc = self.getNow()
+        performanceMessage += self._logGather('make response', timeUpdateBuyers, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
 
     def getVendorTweet(self, request):
         performanceMessage = ''
@@ -684,6 +732,14 @@ class DazarAPI:
 
         if level == 'DEBUG':
             logger.debug(fullMsg)
+        elif level == 'INFO':
+            logger.info(fullMsg)
+        elif level == 'WARNING':
+            logger.warning(fullMsg)
+        elif level == 'ERROR':
+            logger.error(fullMsg)
+        else:
+            pass # nothing
 
     def _logGather(self, msg, start, end):
         duration = (end - start).microseconds/1000
