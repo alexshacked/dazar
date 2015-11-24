@@ -798,6 +798,8 @@ class DazarAPI:
         if 'all' in patronTags:
             return False # do not filter
         for vndTag in vendorTags:
+                if vndTag == "all": # for the buyers case
+                    return False
                 if vndTag in patronTags:
                     return False # one vendor tag corresponds to a tag that interests the patron - that's enough
         return True # filter

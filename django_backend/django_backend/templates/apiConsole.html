@@ -77,6 +77,8 @@
         <input type="text" name="txtLongitude" size="20" maxlength="20" style="background-color:Azure;border-color:Azure"/>
         Radius:
         <input type="text" name="txtRadius" size="20" maxlength="20"style="background-color:Azure;border-color:Azure" />
+        &nbsp&nbsp&nbsp
+        <input type="button" name="buttonGetBuyers" style="color: black; background-color: GreenYellow" value="Get buyers" />
     </p>
      <p>
          CATEGORIES: ------
@@ -142,6 +144,7 @@
     var buttonRegister = document.form1.buttonRegister;
     var buttonAddTweet = document.form1.buttonAddTweet;
     var buttonGetTweets = document.form1.buttonGetTweets;
+    var buttonGetBuyers = document.form1.buttonGetBuyers;
     var buttonGetCoordinates = document.form1.buttonAddrs2Coords;
     var buttonGetVendor = document.form1.buttonGetVendor;
     var buttonGetAllVendors = document.form1.buttonGetAllVendors;
@@ -153,6 +156,7 @@
     var cmdRegister = '/registerVendor';
     var cmdAddTweet = '/addTweet';
     var cmdGetTweets = '/getTweets';
+    var cmdGetBuyers = '/getBuyers';
     var cmdGetCoordinates = '/getCoordinates';
     var cmdGetVendor = '/getVendor';
     var cmdGetAllVendors = '/getAllVendors';
@@ -200,6 +204,9 @@
         }
         else if (obj.command == 'getTweets') {
             return parseResponseGetTweets(obj);
+        }
+        else if (obj.command == 'getBuyers') {
+            return parseResponseGetBuyers(obj);
         }
         else if (obj.command == 'getCoordinates') {
             return parseResponseGetCoordinates(obj);
@@ -259,6 +266,23 @@
             var votes = neighbours[i].votes;
 
             var one = vendor + ":   " + tweet + ",  votes: " + votes + "\n";
+            res += one;
+        }
+        return res;
+    }
+
+    function parseResponseGetBuyers(obj) {
+        var buyers = obj.data;
+        res = "";
+        for (var i = 0; i < buyers.length; i++) {
+            var buyerId = buyers[i].buyerId
+            var tags = new Array(buyers[i].tags);
+            var latitude = buyers[i].coordinates.latitude;
+            var longitude = buyers[i].coordinates.longitude;
+            var creationTime = buyers[i].creationTime
+
+            var one = "buyerId: " + buyerId + ", latitude: " + latitude + ",  longitude: "
+                        + longitude + " ,tags: " + tags.join() + "\n\n";
             res += one;
         }
         return res;
@@ -552,6 +576,27 @@
         sendMsg(uri, flat);
     }
 
+    function OnGetBuyers() {
+        cleanDisplay();
+
+        var uri = document.form1.txtUri.value + cmdGetBuyers;
+        var latitude = document.form1.txtLatitude.value;
+        var longitude =  document.form1.txtLongitude.value;
+        var radius =  document.form1.txtRadius.value;
+        var tags = getTweetsTags();
+
+        var body = {};
+        body.latitude = latitude;
+        body.longitude = longitude;
+        body.radius = radius;
+        body.tags = tags;
+
+        var flat = JSON.stringify(body, null, 2);
+
+        showRequest(uri, flat);
+        sendMsg(uri, flat);
+    }
+
     function OnGetCoordinates() {
         cleanDisplay();
 
@@ -669,6 +714,7 @@
     buttonRegister.addEventListener("click", OnRegister);
     buttonAddTweet.addEventListener("click", OnAddTweet);
     buttonGetTweets.addEventListener("click", OnGetTweets);
+    buttonGetBuyers.addEventListener("click", OnGetBuyers);
     buttonGetCoordinates.addEventListener("click", OnGetCoordinates);
     buttonGetVendor.addEventListener("click", OnGetVendor);
     buttonGetAllVendors.addEventListener("click", OnGetAllVendors);
