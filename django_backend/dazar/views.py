@@ -176,8 +176,55 @@ class DazarAPI:
 
         return HttpResponse(flat)
 
-    def getBuyer(self, request):
-        self._doLog("DEBUG", "called getBuyers")
+    def getBuyers(self, request):
+        performanceMessage = ''
+        timeEnterFunc = self.getNow()
+
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getBuyers', invalid)))
+        self._doLog('DEBUG', 'getBuyers', request.body)
+        body = json.loads(request.body)
+
+        # extract getTweets arguments from the request
+        patronTags = body['tags']
+        maxDistance = int(body['radius'])
+        lat = float(body['latitude'])
+        lng = float(body['longitude'])
+
+        query = { 'buyerLocation': { '$near': {'$geometry': {'type':"Point", 'coordinates': [lng, lat]}, '$maxDistance': maxDistance } } }
+
+        timeQueryBuyers = self.getNow()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeQueryBuyers)
+
+        try:
+            queryset = Buyers.objects.raw_query(query)
+            n = len(queryset) # probably a Django MongoDB Engine issue. Empty queryset does not support the contract API
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getBuyers', 'Failed on access to MongoDb  ------- ' + e.message)))
+
+        timeQueryPseudoBuyers = self.getNow()
+        performanceMessage += self._logGather('get buyers inside radius', timeQueryBuyers, timeQueryPseudoBuyers)
+        response = [self._responseBuyer(q) for q in queryset if not self._filterByTag(patronTags, q.buyerTags)]
+
+        try:
+            queryset = PseudoBuyers.objects.raw_query(query)
+            n = len(queryset) # probably a Django MongoDB Engine issue. Empty queryset does not support the contract API
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'getPseudoBuyers', 'Failed on access to MongoDb  ------- ' + e.message)))
+
+        timeMakeResponse = self.getNow()
+        performanceMessage += self._logGather('get pseudobuyers inside radius', timeQueryPseudoBuyers, timeMakeResponse)
+        response += [self._responseBuyer(q) for q in queryset if not self._filterByTag(patronTags, q.buyerTags)]
+
+        flat = json.dumps(self._makeReturn('OK', 'getBuyers', response))
+
+        timeExitFunc = self.getNow()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+        return HttpResponse(flat)
 
     def getTweets(self, request):
         performanceMessage = ''
@@ -766,6 +813,15 @@ class DazarAPI:
         one['coordinates'] = {'latitude':oneFromMongo.vendorLocation.coordinates[1], 'longitude':oneFromMongo.vendorLocation.coordinates[0]}
         one['creationTime'] = str(oneFromMongo.creationTime)
         one['votes'] = oneFromMongo.votes
+
+        return one
+
+    def _responseBuyer(self, oneFromMongo):
+        one = {}
+        one['buyerId'] = oneFromMongo.buyerId
+        one['tags'] = oneFromMongo.buyerTags
+        one['coordinates'] = {'latitude':oneFromMongo.buyerLocation.coordinates[1], 'longitude':oneFromMongo.buyerLocation.coordinates[0]}
+        one['creationTime'] = str(oneFromMongo.creationTime)
 
         return one
 

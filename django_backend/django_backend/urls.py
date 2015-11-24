@@ -9,6 +9,7 @@ api = DazarAPI()
 urlpatterns = patterns('',
     url(r'^registerVendor$', api.registerVendor),
     url(r'^addTweet$', api.addTweet),
+    url(r'^getBuyers$', api.getBuyers),
     url(r'^getTweets$', api.getTweets),
     url(r'^getVendorTweet$', api.getVendorTweet),
     url(r'^getAllVendorTweets$', api.getAllVendorTweets),
