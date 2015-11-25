@@ -288,7 +288,7 @@ class DazarAPI:
 
     def updateBuyer(self, buyerId, pseudoBuyer, latitude, longitude, tags):
         msg = 'updateBuyer - buyerId: %s, pseudoBuyer: %s, latitude: %s, longitude: %s, tags: %s' % (buyerId, pseudoBuyer, latitude, longitude, ",".join(tags))
-        print(msg)
+        # print(msg)
 
         isPseudo = bool(int(pseudoBuyer))
         if not isPseudo:
@@ -318,19 +318,17 @@ class DazarAPI:
                     'buyerLocation': { '$near': {'$geometry': {'type':"Point", 'coordinates': [lng, lat]}, '$maxDistance': pseudoRadius } },
                     'buyerId': buyerId
                 }
-        exist = True
+
         try:
             queryset = PseudoBuyers.objects.raw_query(query)
-            len(queryset) # to catch nonexist
         except Exception as e:
-            exist = False
+            return
 
 
         timeQueryPseudoBuyer = self.getNow()
         performanceMessage += self._logGather('query pseudoBuyer inside radius', timeEnterFunc, timeQueryPseudoBuyer)
-        if exist:
-            for q in queryset: # there is place for only one pseudoBuyer on a pseudoRadius around a given map location
-                q.delete()
+        for q in queryset: # there is place for only one pseudoBuyer on a pseudoRadius around a given map location
+            q.delete()
 
         pt = Point(type = 'Point', coordinates = [lng, lat] )
         now = self.getNow()
@@ -350,13 +348,11 @@ class DazarAPI:
         performanceMessage = ''
         timeEnterFunc = self.getNow()
 
-        newBuyer = False
         try:
             buyer = Buyers.objects.get(buyerId = buyerId)
+            buyer.delete()
         except Exception as e:
-            if type(e) is ServerSelectionTimeoutError:
-                return HttpResponse(json.dumps(self._makeReturn('FAIL','find Buyer', 'mongodb is down')))
-            newBuyer = True
+            pass # in case it does not exist
 
         timeUpdateBuyers = self.getNow()
         performanceMessage += self._logGather('check if this buyer exists', timeEnterFunc, timeUpdateBuyers)
@@ -364,22 +360,13 @@ class DazarAPI:
         # create or update the buyer
         pt = Point(type = 'Point', coordinates = [float(longitude), float(latitude)] )
         now = self.getNow()
-        if newBuyer:
-            try:
-                doc = Buyers.objects.create(buyerId = buyerId, buyerLocation = pt,
+        try:
+            doc = Buyers.objects.create(buyerId = buyerId, buyerLocation = pt,
                                          buyerTags = tags, creationTime = now)
-                doc.save()
-            except Exception as e:
-                return HttpResponse(json.dumps(self._makeReturn('FAIL','updateBuyer', 'Failed on access to MongoDb  ------- ' + e.message)))
-        else: # update
-            try:
-                buyer.buyerLocation = pt
-                buyer.buyerId = buyerId
-                buyer.creationTime = now
-                buyer.buyerTags = tags
-                buyer.save()
-            except Exception as e:
-                return HttpResponse(json.dumps(self._makeReturn('FAIL','update', 'Failed on access to MongoDb  ------- ' + e.message)))
+            doc.save()
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','updateBuyer', 'Failed on access to MongoDb  ------- ' + e.message)))
+
 
         timeExitFunc = self.getNow()
         performanceMessage += self._logGather('make response', timeUpdateBuyers, timeExitFunc)
