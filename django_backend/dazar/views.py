@@ -278,13 +278,11 @@ class DazarAPI:
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
 
         if buyerId and pseudoBuyer:
-            self.updateBuyer(buyerId, pseudoBuyer, body['latitude'], body['longitude'], patronTags)
-            '''
+            # self.updateBuyer(buyerId, pseudoBuyer, body['latitude'], body['longitude'], patronTags)
             # instead of calling updateBuyer() directly we do it on a separate thread - trying to increase backend responsivity
             dataQueue.put({'func': self.updateBuyer, 'buyerId': buyerId,
                            'pseudoBuyer': pseudoBuyer, 'latitude': body['latitude'], 'longitude': body['longitude'],
                            'tags': patronTags})
-            '''
 
         return HttpResponse(flat)
 
