@@ -438,6 +438,14 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         print("didFinishSelectingLocation: " + location)
         searchAddress = location
         dismissViewControllerAnimated(true, completion: nil)
+        
+        if searchAddress.isEmpty {
+            startTime = CFAbsoluteTimeGetCurrent() - 40
+        } else {
+            let coords: Coordinates = address2Coordinates(searchAddress)
+            startTime = nil
+            addPinToMapView(coords.latitude, lng: coords.longitude)
+        }
     }
 
     override func viewDidLoad() {
