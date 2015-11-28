@@ -11,7 +11,7 @@ func == (left: AnType, right: AnType) -> Bool{
 enum AnType : String {
     case Customer = "Customer"
     case Vendor = "Vendor"
-    
+    case NoVendor = "NoVendor"
 }
 
 
