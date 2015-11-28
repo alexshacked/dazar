@@ -19,6 +19,7 @@
 		056829821BEF923A001F1B22 /* DazarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 056829811BEF923A001F1B22 /* DazarTests.swift */; };
 		0568298D1BEF923A001F1B22 /* DazarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568298C1BEF923A001F1B22 /* DazarUITests.swift */; };
 		0568299B1BF3A44A001F1B22 /* DazarMapAnnotations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */; };
+		73AD1AFD1C0997E3007EC4A1 /* NewVendorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73AD1AFC1C0997E3007EC4A1 /* NewVendorController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 		0568298C1BEF923A001F1B22 /* DazarUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DazarUITests.swift; sourceTree = "<group>"; };
 		0568298E1BEF923A001F1B22 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DazarMapAnnotations.swift; sourceTree = "<group>"; };
+		73AD1AFC1C0997E3007EC4A1 /* NewVendorController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewVendorController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +120,7 @@
 				0507FE8D1BFE2AAA003FAAF7 /* LocationController.swift */,
 				0507FE8F1BFE778D003FAAF7 /* TagItem.swift */,
 				0507FE911BFE7BD8003FAAF7 /* Constants.swift */,
+				73AD1AFC1C0997E3007EC4A1 /* NewVendorController.swift */,
 			);
 			path = Dazar;
 			sourceTree = "<group>";
@@ -273,6 +276,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				73AD1AFD1C0997E3007EC4A1 /* NewVendorController.swift in Sources */,
 				0568296F1BEF923A001F1B22 /* SecondViewController.swift in Sources */,
 				0507FE901BFE778D003FAAF7 /* TagItem.swift in Sources */,
 				0568296B1BEF923A001F1B22 /* AppDelegate.swift in Sources */,
