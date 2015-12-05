@@ -56,7 +56,7 @@ class NewVendorController: UITableViewController {
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         if indexPath.section != 2 {
-            return super.tableView(tableView, didSelectRowAtIndexPath: indexPath)
+            return //super.tableView(tableView, didSelectRowAtIndexPath: indexPath)
         }
         if let cell = tableView.cellForRowAtIndexPath(indexPath) {
             let item = items[indexPath.row]
@@ -64,6 +64,13 @@ class NewVendorController: UITableViewController {
             cellCheck(cell, item: item)
         }
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
+    }
+    
+    override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+        if indexPath.section != 2 {
+            return nil
+        }
+        return indexPath
     }
     
     func cellCheck(cell: UITableViewCell, item: TagItem) {
