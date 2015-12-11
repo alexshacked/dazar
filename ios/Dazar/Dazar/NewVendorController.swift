@@ -8,15 +8,21 @@
 
 import UIKit
 
-/*
-protocol LocationControllerDelegate: class {
-    func locationControllerDidCancel(controller: LocationController)
-    func locationController(controller: LocationController, didFinishSelectingLocation location: String)
-}
-*/
 
-class NewVendorController: UITableViewController {
+protocol NewVendorControllerDelegate: class {
+    func newVendorControllerDidCancel(controller: NewVendorController)
+    func newVendorControllerDidOk(controller: NewVendorController, newVendorRequest request: [NSString: AnyObject])
+}
+
+class NewVendorController: UITableViewController, UITextFieldDelegate {
+    weak var delegate: NewVendorControllerDelegate?
     
+    @IBOutlet weak var country: UITextField!
+    @IBOutlet weak var city: UITextField!
+    @IBOutlet weak var streetName: UITextField!
+    @IBOutlet weak var houseNumber: UITextField!
+    @IBOutlet weak var phoneNumber: UITextField!
+    @IBOutlet weak var businessName: UITextField!
     var items: [TagItem]
     //weak var delegate: LocationControllerDelegate?
     
@@ -73,6 +79,11 @@ class NewVendorController: UITableViewController {
         return indexPath
     }
     
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        self.view.endEditing(true)
+        return false
+    }
+    
     func cellCheck(cell: UITableViewCell, item: TagItem) {
         if item.checked {
             cell.accessoryType = .Checkmark
@@ -84,7 +95,7 @@ class NewVendorController: UITableViewController {
     @IBAction func cancel() {
         print("new vendor cancel")
         dismissViewControllerAnimated(true, completion: nil)
-        //delegate?.locationControllerDidCancel(self)
+        delegate?.newVendorControllerDidCancel(self)
     }
     
     @IBAction func done() {
@@ -96,18 +107,46 @@ class NewVendorController: UITableViewController {
                 tags.append(item.text)
             }
         }
-        if tags.isEmpty {
+    
+        if tags.isEmpty || validateTextInput() == false {
             displayAlertWithTitle("Input data missing",
                 message: "Must provide business name, phone, full address and at least one category for the business market.")
         }
         else {
-            dismissViewControllerAnimated(true, completion: nil)
+           var fullAddress = houseNumber.text! + " " + streetName.text! + ", " + city.text!
+            if country.text?.isEmpty == false {
+                fullAddress = fullAddress + ", " + country.text!
+            }
+            let request : [NSString: AnyObject] =
+            [
+                "vendor": businessName.text!,
+                "address": fullAddress,
+                "phone": phoneNumber.text!,
+                "tags": tags
+            ]
+
+            delegate?.newVendorControllerDidOk(self, newVendorRequest: request)
         }
-        // delegate?.locationController(self, didFinishSelectingLocation: address)
     }
     
+    func validateTextInput() -> Bool {
+        if businessName.text?.isEmpty == true || phoneNumber.text?.isEmpty == true ||
+           houseNumber.text?.isEmpty == true || streetName.text?.isEmpty == true ||
+           city.text?.isEmpty  == true || country.text?.isEmpty == true {
+            return false
+        }
+        
+        return true
+    }
 
     override func viewDidLoad() {
+        country.delegate = self
+        city.delegate = self
+        streetName.delegate = self
+        houseNumber.delegate = self
+        phoneNumber.delegate = self
+        businessName.delegate = self
+        
         super.viewDidLoad()
         
     }

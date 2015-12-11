@@ -110,7 +110,7 @@
                     <navigationItem key="navigationItem" title="Dazar Vendor" id="0bF-mh-SXD">
                         <barButtonItem key="rightBarButtonItem" title="New Vendor" id="xqP-cr-I6r">
                             <connections>
-                                <segue destination="wbk-eE-43I" kind="presentation" id="1hc-nc-a8C"/>
+                                <segue destination="wbk-eE-43I" kind="presentation" identifier="newVendor" id="1hc-nc-a8C"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -370,7 +370,7 @@
                         <sections>
                             <tableViewSection headerTitle="Busines Name &amp; Phone" id="8HP-zY-ls9">
                                 <cells>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="RmD-ec-n5M">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="RmD-ec-n5M">
                                         <rect key="frame" x="0.0" y="114" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="RmD-ec-n5M" id="BB2-lN-iQA">
@@ -381,14 +381,14 @@
                                                     <rect key="frame" x="18" y="5" width="526" height="30"/>
                                                     <animations/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                    <textInputTraits key="textInputTraits"/>
+                                                    <textInputTraits key="textInputTraits" returnKeyType="done"/>
                                                 </textField>
                                             </subviews>
                                             <animations/>
                                         </tableViewCellContentView>
                                         <animations/>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="ccH-aU-wrP">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="ccH-aU-wrP">
                                         <rect key="frame" x="0.0" y="158" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ccH-aU-wrP" id="iR3-t7-Hxc">
@@ -399,7 +399,7 @@
                                                     <rect key="frame" x="18" y="5" width="528" height="30"/>
                                                     <animations/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                    <textInputTraits key="textInputTraits"/>
+                                                    <textInputTraits key="textInputTraits" returnKeyType="done"/>
                                                 </textField>
                                             </subviews>
                                             <animations/>
@@ -410,7 +410,7 @@
                             </tableViewSection>
                             <tableViewSection headerTitle="Address" id="rP2-Pv-WQ5">
                                 <cells>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="Ps3-9j-gp1">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="Ps3-9j-gp1">
                                         <rect key="frame" x="0.0" y="253" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Ps3-9j-gp1" id="hTT-MT-STx">
@@ -421,14 +421,14 @@
                                                     <rect key="frame" x="26" y="7" width="526" height="30"/>
                                                     <animations/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                    <textInputTraits key="textInputTraits"/>
+                                                    <textInputTraits key="textInputTraits" returnKeyType="done"/>
                                                 </textField>
                                             </subviews>
                                             <animations/>
                                         </tableViewCellContentView>
                                         <animations/>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="F5B-g3-2vi">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="F5B-g3-2vi">
                                         <rect key="frame" x="0.0" y="297" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="F5B-g3-2vi" id="YsO-mb-y4F">
@@ -439,14 +439,14 @@
                                                     <rect key="frame" x="26" y="7" width="525" height="30"/>
                                                     <animations/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                    <textInputTraits key="textInputTraits"/>
+                                                    <textInputTraits key="textInputTraits" returnKeyType="done"/>
                                                 </textField>
                                             </subviews>
                                             <animations/>
                                         </tableViewCellContentView>
                                         <animations/>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="QlA-Gs-Ze0">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="QlA-Gs-Ze0">
                                         <rect key="frame" x="0.0" y="341" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="QlA-Gs-Ze0" id="sC1-e4-sLu">
@@ -454,17 +454,17 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="City" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="I1z-EB-GXo">
-                                                    <rect key="frame" x="27" y="7" width="526" height="30"/>
+                                                    <rect key="frame" x="29" y="5" width="526" height="30"/>
                                                     <animations/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                    <textInputTraits key="textInputTraits"/>
+                                                    <textInputTraits key="textInputTraits" returnKeyType="done"/>
                                                 </textField>
                                             </subviews>
                                             <animations/>
                                         </tableViewCellContentView>
                                         <animations/>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="2cG-oF-9t5">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" id="2cG-oF-9t5">
                                         <rect key="frame" x="0.0" y="385" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="2cG-oF-9t5" id="C2D-Al-myA">
@@ -475,7 +475,7 @@
                                                     <rect key="frame" x="25" y="7" width="527" height="30"/>
                                                     <animations/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                    <textInputTraits key="textInputTraits"/>
+                                                    <textInputTraits key="textInputTraits" returnKeyType="done"/>
                                                 </textField>
                                             </subviews>
                                             <animations/>
@@ -715,6 +715,14 @@
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <connections>
+                        <outlet property="businessName" destination="PfL-QB-QGD" id="q1s-29-re9"/>
+                        <outlet property="city" destination="I1z-EB-GXo" id="wrK-X1-UCL"/>
+                        <outlet property="country" destination="ZeK-Mw-Ob9" id="vou-EJ-0jR"/>
+                        <outlet property="houseNumber" destination="Ap3-t4-v01" id="yqS-qM-OPk"/>
+                        <outlet property="phoneNumber" destination="apc-rX-ngd" id="tvg-5T-W30"/>
+                        <outlet property="streetName" destination="l0U-8y-yOV" id="MbL-bE-gzS"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="TjT-tC-O05" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

@@ -2,15 +2,30 @@ import UIKit
 import CoreLocation
 import MapKit
 
+struct VendorData {
+    var name: String
+    var address: String
+    var latitude: Double
+    var longitude: Double
+    
+    init(name: String, address: String, latitude: Double, longitude: Double) {
+        self.name = name
+        self.address = address
+        self.latitude = latitude
+        self.longitude = longitude
+    }
+}
 
-class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate {
+class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate, NewVendorControllerDelegate {
     // holds the CLLocationManager instance created in viewDidAppear()
     var locationManager: CLLocationManager?
     var mapView: MKMapView!
     var startTime: CFAbsoluteTime! = nil
     var tag = 1
     var searchTags: [String] = ["all"]
-    var vendorAddress = ""
+    
+    var vendorId: String = ""
+    var allVendors = [String:VendorData]()
     
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
@@ -33,7 +48,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         return res
     }
     
-    func addPinToMapView(lat: Double, lng: Double) {
+    func addPinToMapView(lat: Double, lng: Double, an: AnType, title: String, subtitle: String) {
         //print("addPinToMapView() called: \(getTime())")
         if startTime == nil {
             startTime = CFAbsoluteTimeGetCurrent()
@@ -54,9 +69,9 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         
         /* Create the annotation using the location */
         let noVendorAnno = PlayerAnnotation(coordinate: locCustomer,
-            title: "current device location",
-            subtitle: "no vendor registered",
-            anType: .NoVendor)
+            title: title, //"current device location",
+            subtitle: subtitle, //"no vendor registered",
+            anType: an)
         
         var annoList = [PlayerAnnotation]()
         annoList.append(noVendorAnno)
@@ -152,7 +167,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     
     func createHint(view: MKAnnotationView, pla: PlayerAnnotation) {
         let venueView = UITextView(frame: CGRectMake(0, -25, 130, 25))
-        venueView.text = tail(pla.subtitle!, num: 3)
+        venueView.text = tail(pla.title!, num: 3)
         venueView.textAlignment = .Right
         if pla.anType == .Vendor || pla.anType == .NoVendor {
             venueView.backgroundColor = UIColor(CIColor: CIColor(string: "0.4392 0.8588 0.5765 1.0"))
@@ -234,11 +249,12 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         didUpdateLocations locations: [CLLocation]) {
             let last = locations.count - 1
             
-            if vendorAddress.isEmpty { // use device location
-                addPinToMapView(locations[last].coordinate.latitude, lng: locations[last].coordinate.longitude)
+            if vendorId.isEmpty { // use device location
+                addPinToMapView(locations[last].coordinate.latitude, lng: locations[last].coordinate.longitude,
+                    an: .NoVendor, title: "no vendor registered", subtitle: "current device location")
             } else {
-                let coords: Coordinates = address2Coordinates(vendorAddress)
-                addPinToMapView(coords.latitude, lng: coords.longitude)
+                addPinToMapView(allVendors[vendorId]!.latitude, lng: allVendors[vendorId]!.longitude,
+                    an: .Vendor, title: allVendors[vendorId]!.name, subtitle: allVendors[vendorId]!.address)
             }
     }
     
@@ -345,6 +361,67 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             Take appropriate action: for instance, prompt the
             user to enable the location services. */
             print("Location services are not enabled")
+        }
+    }
+    
+    func newVendorControllerDidCancel(controller: NewVendorController) {
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func doRegisterVendor(request: [NSString: AnyObject]) -> NSDictionary? {
+        let httpMethod = "POST"
+        let timeout = 15.0
+        let urlAsString = "http://dazar.io/registerVendor"
+        let url = NSURL(string: urlAsString)
+        
+        let urlRequest = NSMutableURLRequest(URL: url!,
+            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
+            timeoutInterval: timeout)
+        urlRequest.HTTPMethod = httpMethod
+        
+        var jsonResult: NSDictionary?
+        do {
+            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
+                options: .PrettyPrinted)
+            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
+        
+            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
+        
+            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
+            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
+            print(response)
+            jsonResult = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
+            print("registerVendor response:  \(jsonResult)")
+        } catch {
+               return nil
+        }
+        return jsonResult
+    }
+    
+    func newVendorControllerDidOk(controller: NewVendorController,
+        newVendorRequest request: [NSString: AnyObject]) {
+            dismissViewControllerAnimated(true, completion: nil)
+            let newVendor: NSDictionary? = doRegisterVendor(request)
+            if newVendor != nil {
+                let vendorId = newVendor!["data"]!["vendorId"]!
+                let coordinates = newVendor!["data"]!["coordinates"]! as! [String: Double]
+                self.vendorId = vendorId as! String
+                self.allVendors[self.vendorId] = VendorData(name: request[NSString(string: "vendor")] as! String,
+                    address: request[NSString(string: "address")] as! String,
+                    latitude: coordinates["latitude"]!, longitude: coordinates["longitude"]!)
+                
+                startTime = nil
+                addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
+                    an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address)
+            }
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "newVendor" { // 2
+            let navigationController = segue.destinationViewController as! UINavigationController
+            let controller = navigationController.topViewController as! NewVendorController
+            controller.delegate = self
+            //controller.resetTags(searchTags)
         }
     }
     
