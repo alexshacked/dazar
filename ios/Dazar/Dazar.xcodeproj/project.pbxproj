@@ -20,6 +20,8 @@
 		0568298D1BEF923A001F1B22 /* DazarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568298C1BEF923A001F1B22 /* DazarUITests.swift */; };
 		0568299B1BF3A44A001F1B22 /* DazarMapAnnotations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */; };
 		73AD1AFD1C0997E3007EC4A1 /* NewVendorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73AD1AFC1C0997E3007EC4A1 /* NewVendorController.swift */; };
+		73ECC1071C1C458C0004DBB2 /* MyVendorsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73ECC1061C1C458C0004DBB2 /* MyVendorsController.swift */; };
+		73ECC1091C1D73BD0004DBB2 /* Persist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73ECC1081C1D73BD0004DBB2 /* Persist.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +61,8 @@
 		0568298E1BEF923A001F1B22 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0568299A1BF3A44A001F1B22 /* DazarMapAnnotations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DazarMapAnnotations.swift; sourceTree = "<group>"; };
 		73AD1AFC1C0997E3007EC4A1 /* NewVendorController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewVendorController.swift; sourceTree = "<group>"; };
+		73ECC1061C1C458C0004DBB2 /* MyVendorsController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyVendorsController.swift; sourceTree = "<group>"; };
+		73ECC1081C1D73BD0004DBB2 /* Persist.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Persist.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +125,8 @@
 				0507FE8F1BFE778D003FAAF7 /* TagItem.swift */,
 				0507FE911BFE7BD8003FAAF7 /* Constants.swift */,
 				73AD1AFC1C0997E3007EC4A1 /* NewVendorController.swift */,
+				73ECC1061C1C458C0004DBB2 /* MyVendorsController.swift */,
+				73ECC1081C1D73BD0004DBB2 /* Persist.swift */,
 			);
 			path = Dazar;
 			sourceTree = "<group>";
@@ -283,7 +289,9 @@
 				0507FE8C1BFDD8E9003FAAF7 /* TagsController.swift in Sources */,
 				0568299B1BF3A44A001F1B22 /* DazarMapAnnotations.swift in Sources */,
 				0507FE8E1BFE2AAA003FAAF7 /* LocationController.swift in Sources */,
+				73ECC1071C1C458C0004DBB2 /* MyVendorsController.swift in Sources */,
 				0568296D1BEF923A001F1B22 /* FirstViewController.swift in Sources */,
+				73ECC1091C1D73BD0004DBB2 /* Persist.swift in Sources */,
 				0507FE921BFE7BD8003FAAF7 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

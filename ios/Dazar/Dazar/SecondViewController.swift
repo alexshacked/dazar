@@ -2,11 +2,19 @@ import UIKit
 import CoreLocation
 import MapKit
 
-struct VendorData {
+class VendorData: NSObject, NSCoding {
     var name: String
     var address: String
     var latitude: Double
     var longitude: Double
+    
+    required init?(coder aDecoder: NSCoder) {
+        name = aDecoder.decodeObjectForKey("name") as! String
+        address = aDecoder.decodeObjectForKey("address") as! String
+        latitude = aDecoder.decodeDoubleForKey("latitude")
+        longitude = aDecoder.decodeDoubleForKey("longitude")
+        super.init()
+    }
     
     init(name: String, address: String, latitude: Double, longitude: Double) {
         self.name = name
@@ -14,9 +22,17 @@ struct VendorData {
         self.latitude = latitude
         self.longitude = longitude
     }
+    
+    func encodeWithCoder(aCoder: NSCoder) {
+        aCoder.encodeObject(name, forKey: "name")
+        aCoder.encodeObject(address, forKey: "address")
+        aCoder.encodeDouble(latitude, forKey: "latitude")
+        aCoder.encodeDouble(longitude, forKey: "longitude")
+    }
 }
 
-class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate, NewVendorControllerDelegate {
+class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate,
+            NewVendorControllerDelegate,  MyVendorsControllerDelegate {
     // holds the CLLocationManager instance created in viewDidAppear()
     var locationManager: CLLocationManager?
     var mapView: MKMapView!
@@ -26,10 +42,14 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     
     var vendorId: String = ""
     var allVendors = [String:VendorData]()
+    var persist: Persist!
     
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
         mapView = MKMapView()
+        persist = Persist(file: "vendors.plist")
+        allVendors = persist.loadAllVendors()
+        vendorId = persist.loadVendorId()
     }
     
     /* We have a pin on the map; now zoom into it and make that pin
@@ -409,6 +429,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                 self.allVendors[self.vendorId] = VendorData(name: request[NSString(string: "vendor")] as! String,
                     address: request[NSString(string: "address")] as! String,
                     latitude: coordinates["latitude"]!, longitude: coordinates["longitude"]!)
+                persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
                 
                 startTime = nil
                 addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
@@ -416,13 +437,56 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             }
     }
     
+    func selectAnotherVendor(name: String) {
+        for (id, vendor) in allVendors {
+            if vendor.name != name {
+                continue
+            }
+            if id != vendorId {
+                vendorId = id
+                startTime = nil
+                addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
+                    an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address)
+            }
+        }
+    }
+    
+    func myVendorControllerDidCancel(controller: MyVendorsController) {
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func myVendorControllerDidOk(controller: MyVendorsController, didFinishSelectingVendor vendor: String) {
+        dismissViewControllerAnimated(true, completion: nil)
+        selectAnotherVendor(vendor)
+    }
+    
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "newVendor" { // 2
+        if segue.identifier == "newVendor" {
             let navigationController = segue.destinationViewController as! UINavigationController
             let controller = navigationController.topViewController as! NewVendorController
             controller.delegate = self
             //controller.resetTags(searchTags)
+        } else if segue.identifier == "MyVendors" {
+            let navigationController = segue.destinationViewController as! UINavigationController
+            let controller = navigationController.topViewController as! MyVendorsController
+            controller.delegate = self
+            initMyVendorsController(controller)
         }
+    }
+    
+    func initMyVendorsController(controller: MyVendorsController) {
+        var items = [VendorItem]()
+        
+        for (id, data) in allVendors {
+            var checked = false
+            if id == vendorId {
+                checked = true
+            }
+            let item = VendorItem(text: data.name, checked: checked)
+            items.append(item)
+        }
+        
+        controller.setItems(items)
     }
     
     override func viewDidLoad() {

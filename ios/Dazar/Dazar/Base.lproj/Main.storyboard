@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9051"/>
+        <capability name="Navigation items with more than one left or right bar item" minToolsVersion="7.0"/>
     </dependencies>
     <scenes>
         <!--Dazar Buyer-->
@@ -89,36 +90,82 @@
             </objects>
             <point key="canvasLocation" x="3114" y="-320"/>
         </scene>
-        <!--Dazar Vendor-->
+        <!--Second View Controller-->
         <scene sceneID="wg7-f3-ORb">
             <objects>
                 <viewController id="8rJ-Kc-sve" customClass="SecondViewController" customModule="Dazar" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="L7p-HK-0SC"/>
-                        <viewControllerLayoutGuide type="bottom" id="Djb-ko-YwX"/>
-                    </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="QS5-Rx-YEW">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <animations/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                        <gestureRecognizers/>
-                        <connections>
-                            <outletCollection property="gestureRecognizers" destination="L5h-Dd-r8g" appends="YES" id="hqr-tn-USK"/>
-                        </connections>
-                    </view>
-                    <navigationItem key="navigationItem" title="Dazar Vendor" id="0bF-mh-SXD">
-                        <barButtonItem key="rightBarButtonItem" title="New Vendor" id="xqP-cr-I6r">
-                            <connections>
-                                <segue destination="wbk-eE-43I" kind="presentation" identifier="newVendor" id="1hc-nc-a8C"/>
-                            </connections>
-                        </barButtonItem>
+                    <navigationItem key="navigationItem" id="0bF-mh-SXD">
+                        <barButtonItem key="leftBarButtonItem" title="New Tweet" style="done" id="wjf-ni-Itr"/>
+                        <rightBarButtonItems>
+                            <barButtonItem title="New Vendor" style="done" id="xqP-cr-I6r">
+                                <connections>
+                                    <segue destination="wbk-eE-43I" kind="presentation" identifier="newVendor" id="1hc-nc-a8C"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem title="My Vendors            " style="done" id="VaM-yT-V5Q">
+                                <connections>
+                                    <segue destination="73B-u2-eGb" kind="presentation" identifier="MyVendors" id="w13-If-xZR"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4Nw-L8-lE0" sceneMemberID="firstResponder"/>
                 <tapGestureRecognizer id="L5h-Dd-r8g"/>
             </objects>
             <point key="canvasLocation" x="1572" y="473"/>
+        </scene>
+        <!--My Vendors-->
+        <scene sceneID="0Wh-2v-DLc">
+            <objects>
+                <tableViewController title="My Vendors" id="7ky-jD-Iil" customClass="MyVendorsController" customModule="Dazar" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" id="wGK-Ro-0Mi">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <animations/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <prototypes>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="VendorItem" id="xEZ-Vk-mdK">
+                                <rect key="frame" x="0.0" y="92" width="600" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="xEZ-Vk-mdK" id="3P0-1z-aO7">
+                                    <rect key="frame" x="0.0" y="0.0" width="600" height="43"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" tag="1001" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="e9R-e4-CCo">
+                                            <rect key="frame" x="15" y="0.0" width="498" height="35"/>
+                                            <animations/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <animations/>
+                                </tableViewCellContentView>
+                                <animations/>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="7ky-jD-Iil" id="vEt-36-xZB"/>
+                            <outlet property="delegate" destination="7ky-jD-Iil" id="oJq-yP-QxA"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="My Vendors" id="Gej-kg-aXr">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="wX8-nK-Iup">
+                            <connections>
+                                <action selector="cancel:" destination="7ky-jD-Iil" id="zjq-Qr-tni"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="VfW-tc-3Ux">
+                            <connections>
+                                <action selector="done:" destination="7ky-jD-Iil" id="A8M-zB-AXt"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="sas-Pq-qqg" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2384" y="1334"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="yl2-sM-qoP">
@@ -726,7 +773,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="TjT-tC-O05" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3097" y="1044"/>
+            <point key="canvasLocation" x="3909" y="1044"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="Jlf-ms-gNn">
@@ -746,6 +793,25 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="UWn-eB-j3G" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2238" y="626"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="jiN-Uh-E2t">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="73B-u2-eGb" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="vuf-04-z17">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <animations/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="7ky-jD-Iil" kind="relationship" relationship="rootViewController" id="wnx-d4-GDF"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ffh-px-bsx" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1572" y="1334"/>
         </scene>
     </scenes>
     <resources>
