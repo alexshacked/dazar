@@ -50,6 +50,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         persist = Persist(file: "vendors.plist")
         allVendors = persist.loadAllVendors()
         vendorId = persist.loadVendorId()
+        validateVendors()
     }
     
     /* We have a pin on the map; now zoom into it and make that pin
@@ -444,6 +445,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             }
             if id != vendorId {
                 vendorId = id
+                persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
                 startTime = nil
                 addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
                     an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address)
@@ -487,6 +489,62 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         }
         
         controller.setItems(items)
+    }
+    
+    func existVendor(id: String) -> Bool {
+        var exist = false
+        
+        let httpMethod = "POST"
+        let timeout = 15.0
+        let urlAsString = "http://dazar.io/getVendor"
+        let url = NSURL(string: urlAsString)
+        
+        let urlRequest = NSMutableURLRequest(URL: url!,
+            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
+            timeoutInterval: timeout)
+        urlRequest.HTTPMethod = httpMethod
+        
+        let request = ["vendorId": id]
+        
+        var jsonResult: NSDictionary?
+        do {
+            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
+                options: .PrettyPrinted)
+            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
+            
+            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
+            
+            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
+            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
+            jsonResult = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
+            let vendorExist = jsonResult!["status"] as! String
+            if  vendorExist != "FAIL" {
+                exist = true
+            }
+        } catch {
+            return exist
+        }
+        
+        return exist
+    }
+    
+    /* test for each vendor stored on the phone that it stil exists in the server database
+    */
+    func validateVendors() {
+        var changeVendorId = false
+        for (id, data) in allVendors {
+            let exist =  existVendor(id)
+            if exist == true {
+                continue
+            }
+            allVendors.removeValueForKey(id)
+            if vendorId == id {
+                changeVendorId = true
+            }
+        }
+        if changeVendorId == true  && allVendors.keys.isEmpty == false {
+            vendorId = ([String](allVendors.keys))[0]
+        }
     }
     
     override func viewDidLoad() {

@@ -46,22 +46,27 @@ class Persist {
             let data = NSData(contentsOfFile: path)
             let unarchiver = NSKeyedUnarchiver(forReadingWithData: data!)
             items = unarchiver.decodeObjectForKey("allVendors") as! [String:VendorData]
+
             unarchiver.finishDecoding()
         }
         return items!
     }
     
-    func loadVendorId() -> String! {
-        var vendorId:String!
+    func loadVendorId() -> String {
+        var resultId:String = ""
                 
         if NSFileManager.defaultManager().fileExistsAtPath(fullPath) {
             let data = NSData(contentsOfFile: fullPath)
             let unarchiver = NSKeyedUnarchiver(forReadingWithData: data!)
-            vendorId = unarchiver.decodeObjectForKey("vendorId") as! String
+            let vendorId = unarchiver.decodeObjectForKey("vendorId") as? String
+            if vendorId != nil {
+                resultId = vendorId!
+            }
+        
             unarchiver.finishDecoding()
         }
                 
-        return vendorId
+        return resultId
     }
 }
 
