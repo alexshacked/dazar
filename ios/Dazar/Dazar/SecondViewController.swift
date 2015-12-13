@@ -545,6 +545,11 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         if changeVendorId == true  && allVendors.keys.isEmpty == false {
             vendorId = ([String](allVendors.keys))[0]
         }
+        
+        if allVendors.keys.isEmpty == true {
+            vendorId = ""
+            persist.saveAllVendors([:], vendorId: "")
+        }
     }
     
     override func viewDidLoad() {
