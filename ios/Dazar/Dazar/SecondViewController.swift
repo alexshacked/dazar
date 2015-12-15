@@ -32,7 +32,7 @@ class VendorData: NSObject, NSCoding {
 }
 
 class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate,
-            NewVendorControllerDelegate,  MyVendorsControllerDelegate {
+            NewVendorControllerDelegate,  MyVendorsControllerDelegate, TweetControllerDelegate {
     // holds the CLLocationManager instance created in viewDidAppear()
     var locationManager: CLLocationManager?
     var mapView: MKMapView!
@@ -69,7 +69,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         return res
     }
     
-    func addPinToMapView(lat: Double, lng: Double, an: AnType, title: String, subtitle: String) {
+    func addPinToMapView(lat: Double, lng: Double, an: AnType, title: String, subtitle: String, tweet: String) {
         //print("addPinToMapView() called: \(getTime())")
         if startTime == nil {
             startTime = CFAbsoluteTimeGetCurrent()
@@ -90,8 +90,8 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         
         /* Create the annotation using the location */
         let noVendorAnno = PlayerAnnotation(coordinate: locCustomer,
-            title: title, //"current device location",
-            subtitle: subtitle, //"no vendor registered",
+            title: title + " -- " + subtitle, //"current device location",
+            subtitle: tweet, //"no vendor registered",
             anType: an)
         
         var annoList = [PlayerAnnotation]()
@@ -175,11 +175,8 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     func tail(text: String, num: Int) ->String {
         var res: String = ""
         let arr = text.characters.split{$0 == " "}.map(String.init)
-        if arr.count <= num {
-            return text
-        }
         
-        for var index = arr.count - num; index < arr.count; ++index {
+        for var index = 0; index < num && arr[index] != "--"; ++index {
             res += arr[index]
             res += " "
         }
@@ -272,10 +269,13 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             
             if vendorId.isEmpty { // use device location
                 addPinToMapView(locations[last].coordinate.latitude, lng: locations[last].coordinate.longitude,
-                    an: .NoVendor, title: "no vendor registered", subtitle: "current device location")
+                    an: .NoVendor, title: "no vendor registered", subtitle: "current device location",
+                    tweet: "")
             } else {
+                let  tweet = doGetTweet(vendorId)
                 addPinToMapView(allVendors[vendorId]!.latitude, lng: allVendors[vendorId]!.longitude,
-                    an: .Vendor, title: allVendors[vendorId]!.name, subtitle: allVendors[vendorId]!.address)
+                    an: .Vendor, title: allVendors[vendorId]!.name,
+                    subtitle: allVendors[vendorId]!.address, tweet: tweet)
             }
     }
     
@@ -434,7 +434,8 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                 
                 startTime = nil
                 addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
-                    an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address)
+                    an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
+                    tweet: "no tweet submitted yet")
             }
     }
     
@@ -446,9 +447,11 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             if id != vendorId {
                 vendorId = id
                 persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
+                let  tweet = doGetTweet(vendorId)
                 startTime = nil
                 addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
-                    an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address)
+                    an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
+                    tweet: tweet)
             }
         }
     }
@@ -473,6 +476,10 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             let controller = navigationController.topViewController as! MyVendorsController
             controller.delegate = self
             initMyVendorsController(controller)
+        } else if segue.identifier == "tweet" {
+            let navigationController = segue.destinationViewController as! UINavigationController
+            let controller = navigationController.topViewController as! TweetController
+            controller.delegate = self
         }
     }
     
@@ -550,6 +557,96 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             vendorId = ""
             persist.saveAllVendors([:], vendorId: "")
         }
+    }
+    
+    func tweetControllerDidCancel(controller: TweetController) {
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func tweetControllerDidOk(controller: TweetController, newTweet tweet: String) {
+        dismissViewControllerAnimated(true, completion: nil)
+        doSendTweet(tweet)
+        
+        startTime = nil
+        addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
+            an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
+            tweet: tweet)
+    }
+    
+    func doSendTweet(message: String) -> Bool{
+        var success = false
+        
+        let httpMethod = "POST"
+        let timeout = 15.0
+        let urlAsString = "http://dazar.io/addTweet"
+        let url = NSURL(string: urlAsString)
+        
+        let urlRequest = NSMutableURLRequest(URL: url!,
+            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
+            timeoutInterval: timeout)
+        urlRequest.HTTPMethod = httpMethod
+        
+        let request = ["vendorId": vendorId,
+                       "tweet": message]
+        
+        var jsonResult: NSDictionary?
+        do {
+            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
+                options: .PrettyPrinted)
+            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
+            
+            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
+            
+            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
+            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
+            jsonResult = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
+            let tweetSaved = jsonResult!["status"] as! String
+            if  tweetSaved != "FAIL" {
+                success = true
+            }
+        } catch {
+            return success
+        }
+        
+        return success
+    }
+    
+    func doGetTweet(vendorId: String) -> String{
+        var tweet = "No tweet submitted yet"
+        
+        let httpMethod = "POST"
+        let timeout = 15.0
+        let urlAsString = "http://dazar.io/getVendorTweet"
+        let url = NSURL(string: urlAsString)
+        
+        let urlRequest = NSMutableURLRequest(URL: url!,
+            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
+            timeoutInterval: timeout)
+        urlRequest.HTTPMethod = httpMethod
+        
+        let request = ["vendorId": vendorId]
+        
+        var jsonResult: NSDictionary?
+        do {
+            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
+                options: .PrettyPrinted)
+            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
+            
+            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
+            
+            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
+            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
+            jsonResult = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
+            let tweetSaved = jsonResult!["status"] as! String
+            if  tweetSaved != "FAIL" {
+                tweet = jsonResult!["data"]!["tweet"] as! String
+            }
+        } catch {
+            return tweet
+        }
+        
+        return tweet
+
     }
     
     override func viewDidLoad() {

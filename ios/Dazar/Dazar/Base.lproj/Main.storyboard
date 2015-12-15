@@ -21,12 +21,12 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" title="Dazar Buyer" id="YJH-7C-f6G">
-                        <barButtonItem key="leftBarButtonItem" title="Location" id="KzH-rj-CjF">
+                        <barButtonItem key="leftBarButtonItem" title="Location" style="done" id="KzH-rj-CjF">
                             <connections>
                                 <segue destination="ejc-tM-g3U" kind="presentation" identifier="searchLocation" id="MUY-Mt-IBj"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title="Tags" id="wV1-OQ-Zho">
+                        <barButtonItem key="rightBarButtonItem" title="Tags" style="done" id="wV1-OQ-Zho">
                             <connections>
                                 <action selector="performTags:" destination="9pv-A4-QxB" id="AUQ-NE-Gvx"/>
                                 <segue destination="ewE-3D-YgX" kind="presentation" identifier="searchTags" id="tWI-qw-awz"/>
@@ -95,7 +95,11 @@
             <objects>
                 <viewController id="8rJ-Kc-sve" customClass="SecondViewController" customModule="Dazar" customModuleProvider="target" sceneMemberID="viewController">
                     <navigationItem key="navigationItem" id="0bF-mh-SXD">
-                        <barButtonItem key="leftBarButtonItem" title="New Tweet" style="done" id="wjf-ni-Itr"/>
+                        <barButtonItem key="leftBarButtonItem" title="New Tweet" style="done" id="wjf-ni-Itr">
+                            <connections>
+                                <segue destination="cE4-Si-hft" kind="presentation" identifier="tweet" id="voc-tZ-EpD"/>
+                            </connections>
+                        </barButtonItem>
                         <rightBarButtonItems>
                             <barButtonItem title="New Vendor" style="done" id="xqP-cr-I6r">
                                 <connections>
@@ -166,6 +170,66 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sas-Pq-qqg" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2384" y="1334"/>
+        </scene>
+        <!--Tweet-->
+        <scene sceneID="3b9-i7-5CU">
+            <objects>
+                <tableViewController title="Tweet" id="EBN-Cc-TuV" customClass="TweetController" customModule="Dazar" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="cip-u5-OiP">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <animations/>
+                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <sections>
+                            <tableViewSection headerTitle="CALLOUT!    WHAT IS YOUR MOST EXCITING OFFER TODAY?" id="1wr-Iu-Cd9">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="190" id="Ftm-eG-yhZ">
+                                        <rect key="frame" x="0.0" y="114" width="600" height="190"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="Ftm-eG-yhZ" id="H0U-BA-C0i">
+                                            <rect key="frame" x="0.0" y="0.0" width="600" height="189"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="tYq-z0-nqm">
+                                                    <rect key="frame" x="17" y="8" width="400" height="171"/>
+                                                    <animations/>
+                                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                    <edgeInsets key="layoutMargins" top="8" left="8" bottom="8" right="8"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                                </textView>
+                                            </subviews>
+                                            <animations/>
+                                        </tableViewCellContentView>
+                                        <animations/>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                        </sections>
+                        <connections>
+                            <outlet property="dataSource" destination="EBN-Cc-TuV" id="Nu6-WH-6Sd"/>
+                            <outlet property="delegate" destination="EBN-Cc-TuV" id="l4P-2w-Xc1"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Tweet" id="nK7-NI-WXQ">
+                        <barButtonItem key="leftBarButtonItem" systemItem="cancel" id="t8J-jX-8QT">
+                            <connections>
+                                <action selector="cancel:" destination="EBN-Cc-TuV" id="e9C-1S-KZO"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="Lqy-Z6-bVi">
+                            <connections>
+                                <action selector="done:" destination="EBN-Cc-TuV" id="S67-YD-FVW"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="message" destination="tYq-z0-nqm" id="KKE-D7-nYr"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Tlo-dW-GHm" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1572" y="2043"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="yl2-sM-qoP">
@@ -812,6 +876,25 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ffh-px-bsx" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1572" y="1334"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="LKg-3Z-Bt1">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="cE4-Si-hft" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="s70-Xq-OJr">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <animations/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="EBN-Cc-TuV" kind="relationship" relationship="rootViewController" id="ixw-PV-m2Y"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="jXB-TS-KZk" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="885" y="2043"/>
         </scene>
     </scenes>
     <resources>
