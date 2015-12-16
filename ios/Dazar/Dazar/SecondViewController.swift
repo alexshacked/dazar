@@ -7,20 +7,23 @@ class VendorData: NSObject, NSCoding {
     var address: String
     var latitude: Double
     var longitude: Double
+    var tags: [String]
     
     required init?(coder aDecoder: NSCoder) {
         name = aDecoder.decodeObjectForKey("name") as! String
         address = aDecoder.decodeObjectForKey("address") as! String
         latitude = aDecoder.decodeDoubleForKey("latitude")
         longitude = aDecoder.decodeDoubleForKey("longitude")
+        tags = aDecoder.decodeObjectForKey("tags") as! [String]
         super.init()
     }
     
-    init(name: String, address: String, latitude: Double, longitude: Double) {
+    init(name: String, address: String, latitude: Double, longitude: Double, tags: [String]) {
         self.name = name
         self.address = address
         self.latitude = latitude
         self.longitude = longitude
+        self.tags = tags
     }
     
     func encodeWithCoder(aCoder: NSCoder) {
@@ -28,6 +31,7 @@ class VendorData: NSObject, NSCoding {
         aCoder.encodeObject(address, forKey: "address")
         aCoder.encodeDouble(latitude, forKey: "latitude")
         aCoder.encodeDouble(longitude, forKey: "longitude")
+        aCoder.encodeObject(tags, forKey: "tags")
     }
 }
 
@@ -72,7 +76,8 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         return res
     }
     
-    func addPinToMapView(lat: Double, lng: Double, an: AnType, title: String, subtitle: String, tweet: String) {
+    func addPinToMapView(lat: Double, lng: Double, an: AnType, title: String, subtitle: String,
+        tweet: String, tags: [String]?) {
         //print("addPinToMapView() called: \(getTime())")
             
         /* The locations */
@@ -88,11 +93,69 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         var annoList = [PlayerAnnotation]()
         annoList.append(vendorAnno)
         
+        do {
+            if tags?.isEmpty == false {
+                let tweetsDict: NSDictionary = try self.doGetBuyers(String(lat), longitude: String(lng), tags: tags!)
+                let data: [NSDictionary] = tweetsDict["data"]! as! [NSDictionary]
+                for one in data {
+                    let latitude: Double = one["coordinates"]!["latitude"]! as! Double
+                    let longitude: Double = one["coordinates"]!["longitude"]! as! Double
+                    let locVendor = CLLocationCoordinate2D(latitude: latitude,
+                        longitude: longitude)
+                    
+                    let tagsList: [String] = one["tags"]! as! [String]
+                    let tagsStr: String = tagsList.joinWithSeparator(",")
+                    
+                    let buyerAnno = PlayerAnnotation(coordinate: locVendor,
+                        title: tagsStr,
+                        subtitle: "Looking for: " + tagsStr,
+                        anType: .Customer)
+                    annoList.append(buyerAnno)
+                }
+            }
+        } catch {
+        }
+        
         
         mapView.removeAnnotations(mapView.annotations)
         mapView.addAnnotations(annoList)
         /* And now center the map around the point */
         setCenterOfMapToLocation(locCustomer)
+    }
+    
+    func doGetBuyers(latitude: String, longitude: String, tags: [String]) throws -> NSDictionary {
+        let httpMethod = "POST"
+        let timeout = 15.0
+        let urlAsString = "http://dazar.io/getBuyers"
+        let url = NSURL(string: urlAsString)
+        
+        let urlRequest = NSMutableURLRequest(URL: url!,
+            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
+            timeoutInterval: timeout)
+        urlRequest.HTTPMethod = httpMethod
+        
+        let request : [NSString: AnyObject] =
+        [
+            "latitude": latitude,
+            "longitude": longitude,
+            "radius": "500",
+            "tags": tags
+        ]
+        
+        let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
+            options: .PrettyPrinted)
+        let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
+        
+        urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
+        
+        let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
+        let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
+        print("doGetBuyers")
+        print(response)
+        let jsonResult: NSDictionary = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
+        print("Synchronous\(jsonResult)")
+        
+        return jsonResult
     }
     
     func mapView(mapView: MKMapView,
@@ -265,12 +328,12 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             if vendorId.isEmpty { // use device location
                 addPinToMapView(locations[last].coordinate.latitude, lng: locations[last].coordinate.longitude,
                     an: .NoVendor, title: "no vendor registered", subtitle: "current device location",
-                    tweet: "")
+                    tweet: "", tags: [String]())
             } else {
                 let  tweet = doGetTweet(vendorId)
                 addPinToMapView(allVendors[vendorId]!.latitude, lng: allVendors[vendorId]!.longitude,
                     an: .Vendor, title: allVendors[vendorId]!.name,
-                    subtitle: allVendors[vendorId]!.address, tweet: tweet)
+                    subtitle: allVendors[vendorId]!.address, tweet: tweet, tags: allVendors[vendorId]!.tags)
             }
     }
     
@@ -404,12 +467,13 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                 self.vendorId = vendorId as! String
                 self.allVendors[self.vendorId] = VendorData(name: request[NSString(string: "vendor")] as! String,
                     address: request[NSString(string: "address")] as! String,
-                    latitude: coordinates["latitude"]!, longitude: coordinates["longitude"]!)
+                    latitude: coordinates["latitude"]!, longitude: coordinates["longitude"]!,
+                    tags: request[NSString(string: "tags")] as! [String])
                 persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
                 
                 addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
                     an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-                    tweet: "no tweet submitted yet")
+                    tweet: "no tweet submitted yet", tags: allVendors[self.vendorId]!.tags)
                 activateButtons(true)
             }
     }
@@ -425,7 +489,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                 let  tweet = doGetTweet(vendorId)
                 addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
                     an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-                    tweet: tweet)
+                    tweet: tweet, tags: allVendors[self.vendorId]!.tags)
             }
         }
     }
@@ -543,7 +607,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         
         addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
             an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-            tweet: tweet)
+            tweet: tweet, tags: allVendors[self.vendorId]!.tags)
     }
     
     func doSendTweet(message: String) -> Bool{
@@ -681,7 +745,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                 message: "Tweet was removed")
             addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
                 an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-                tweet: "no tweet submitted yet")
+                tweet: "no tweet submitted yet", tags: allVendors[self.vendorId]!.tags)
         } else {
             displayAlertWithTitle("Command failed",
                 message: "Tweet was not removed")
