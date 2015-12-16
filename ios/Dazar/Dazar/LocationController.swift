@@ -69,6 +69,10 @@ class LocationController: UITableViewController {
         delegate?.locationController(self, didFinishSelectingLocation: address)
     }
     
+    override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+        return nil
+    }
+    
     func enableAddress(enable: Bool) {
         streetNo.enabled = enable
         streetName.enabled = enable

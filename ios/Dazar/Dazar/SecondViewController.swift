@@ -33,7 +33,10 @@ class VendorData: NSObject, NSCoding {
 
 class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate,
             NewVendorControllerDelegate,  MyVendorsControllerDelegate, TweetControllerDelegate {
-    // holds the CLLocationManager instance created in viewDidAppear()
+    
+    @IBOutlet weak var buttonTweet: UIBarButtonItem!
+    @IBOutlet weak var buttonSilent: UIBarButtonItem!
+    @IBOutlet weak var buttonVendors: UIBarButtonItem!
     var locationManager: CLLocationManager?
     var mapView: MKMapView!
     var startTime: CFAbsoluteTime! = nil
@@ -71,19 +74,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     
     func addPinToMapView(lat: Double, lng: Double, an: AnType, title: String, subtitle: String, tweet: String) {
         //print("addPinToMapView() called: \(getTime())")
-        if startTime == nil {
-            startTime = CFAbsoluteTimeGetCurrent()
-        } else {
-            let now = CFAbsoluteTimeGetCurrent()
-            let delta = Int(now - startTime)
-            if delta < 35 {
-                //print("Too early for refresh \(delta)")
-                return
-            }
-            startTime = now
-            print("REFRESH")
-        }
-        
+            
         /* The locations */
         let locCustomer = CLLocationCoordinate2D(latitude: lat,
             longitude: lng)
@@ -265,6 +256,10 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     // SecondViewController must be a CLLocationManager delegate. This functions gets the device's GPS location
     func locationManager(manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]) {
+            if isRefresh() == false {
+                return
+            }
+            
             let last = locations.count - 1
             
             if vendorId.isEmpty { // use device location
@@ -279,45 +274,25 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             }
     }
     
-    func address2Coordinates(address: String) -> Coordinates {
-        var coord: Coordinates = Coordinates()
+    // is it time for refresh
+    func isRefresh() -> Bool {
+        var isRefresh = true
         
-        let httpMethod = "POST"
-        let timeout = 15.0
-        let urlAsString = "http://dazar.io/getCoordinates"
-        let url = NSURL(string: urlAsString)
-        
-        let urlRequest = NSMutableURLRequest(URL: url!,
-            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
-            timeoutInterval: timeout)
-        urlRequest.HTTPMethod = httpMethod
-        
-        let request : [NSString: AnyObject] =
-        [
-            "address": address
-        ]
-        
-        
-        do {
-            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
-                options: .PrettyPrinted)
-            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
-            
-            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
-            
-            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
-            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
-            print(response)
-            let jsonResult: NSDictionary = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
-            let data: NSDictionary = jsonResult["data"]! as! NSDictionary
-            coord.latitude = data["lat"] as! Double
-            coord.longitude = data["lng"] as! Double
-            return coord
-        } catch {
-            
+        if startTime == nil {
+            startTime = CFAbsoluteTimeGetCurrent()
+        } else {
+            let now = CFAbsoluteTimeGetCurrent()
+            let delta = Int(now - startTime)
+            if delta < 35 {
+                //print("Too early for refresh \(delta)")
+                isRefresh = false
+            } else {
+                startTime = now
+                print("REFRESH")
+            }
         }
         
-        return coord
+        return isRefresh
     }
     
     func displayAlertWithTitle(title: String, message: String){
@@ -432,10 +407,10 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                     latitude: coordinates["latitude"]!, longitude: coordinates["longitude"]!)
                 persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
                 
-                startTime = nil
                 addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
                     an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
                     tweet: "no tweet submitted yet")
+                activateButtons(true)
             }
     }
     
@@ -448,7 +423,6 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                 vendorId = id
                 persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
                 let  tweet = doGetTweet(vendorId)
-                startTime = nil
                 addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
                     an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
                     tweet: tweet)
@@ -567,7 +541,6 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         dismissViewControllerAnimated(true, completion: nil)
         doSendTweet(tweet)
         
-        startTime = nil
         addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
             an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
             tweet: tweet)
@@ -649,12 +622,82 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
 
     }
     
+    func doRemoveTweet(vendorId: String) -> Bool{
+        var success = false
+        
+        let httpMethod = "POST"
+        let timeout = 15.0
+        let urlAsString = "http://dazar.io/removeVendorTweet"
+        let url = NSURL(string: urlAsString)
+        
+        let urlRequest = NSMutableURLRequest(URL: url!,
+            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
+            timeoutInterval: timeout)
+        urlRequest.HTTPMethod = httpMethod
+        
+        let request = ["vendorId": vendorId]
+        
+        var jsonResult: NSDictionary?
+        do {
+            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
+                options: .PrettyPrinted)
+            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
+            
+            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
+            
+            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
+            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
+            jsonResult = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
+            let tweetSaved = jsonResult!["status"] as! String
+            if  tweetSaved != "FAIL" {
+                success = true
+            }
+        } catch {
+            return success
+        }
+        
+        return success
+        
+    }
+    
+    func activateButtons(isActive: Bool) {
+        buttonTweet.enabled = isActive
+        buttonSilent.enabled = isActive
+        buttonVendors.enabled = isActive
+    }
+    
+    @IBAction func onTweet(sender: AnyObject) {
+        if vendorId.isEmpty {
+            displayAlertWithTitle("No vendor created yet",
+                message: "You need to create a vendor before you can send")
+            return
+        }
+    }
+    
+    @IBAction func onSilent(sender: AnyObject) {
+        let success = doRemoveTweet(vendorId)
+        if success == true {
+            displayAlertWithTitle("Command succeeded",
+                message: "Tweet was removed")
+            addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
+                an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
+                tweet: "no tweet submitted yet")
+        } else {
+            displayAlertWithTitle("Command failed",
+                message: "Tweet was not removed")
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         mapView.mapType = .Standard
         mapView.frame = view.frame
         mapView.delegate = self
         view.addSubview(mapView)
+        
+        if vendorId.isEmpty == true {
+            activateButtons(false)
+        }
     }
     
     override func didReceiveMemoryWarning() {

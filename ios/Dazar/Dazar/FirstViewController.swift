@@ -39,20 +39,6 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     }
     
     func addPinToMapView(lat: Double, lng: Double) {
-        //print("addPinToMapView() called: \(getTime())")
-        if startTime == nil {
-            startTime = CFAbsoluteTimeGetCurrent()
-        } else {
-            let now = CFAbsoluteTimeGetCurrent()
-            let delta = Int(now - startTime)
-            if delta < 35 {
-                //print("Too early for refresh \(delta)")
-                return
-            }
-            startTime = now
-            print("REFRESH")
-        }
-        
         /* The locations */
         let locCustomer = CLLocationCoordinate2D(latitude: lat,
             longitude: lng)
@@ -253,6 +239,10 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     // FirstViewController must be a CLLocationManager delegate. This functions gets the device's GPS location
     func locationManager(manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]) {
+            if isRefresh() == false {
+                return
+            }
+            
             let last = locations.count - 1
             
             if searchAddress.isEmpty { // use device location
@@ -261,6 +251,27 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
                 let coords: Coordinates = address2Coordinates(searchAddress)
                 addPinToMapView(coords.latitude, lng: coords.longitude)
             }
+    }
+    
+    // is it time for refresh
+    func isRefresh() -> Bool {
+        var isRefresh = true
+        
+        if startTime == nil {
+            startTime = CFAbsoluteTimeGetCurrent()
+        } else {
+            let now = CFAbsoluteTimeGetCurrent()
+            let delta = Int(now - startTime)
+            if delta < 35 {
+                //print("Too early for refresh \(delta)")
+                isRefresh = false
+            } else {
+                startTime = now
+                print("REFRESH")
+            }
+        }
+
+        return isRefresh
     }
     
     func address2Coordinates(address: String) -> Coordinates {
@@ -291,6 +302,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         
             let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
             let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
+            print("address2Coordinates")
             print(response)
             let jsonResult: NSDictionary = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
             let data: NSDictionary = jsonResult["data"]! as! NSDictionary
@@ -399,6 +411,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         
         let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
         let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
+        print("doGetTweets")
         print(response)
         let jsonResult: NSDictionary = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
         print("Synchronous\(jsonResult)")
@@ -443,7 +456,6 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             startTime = CFAbsoluteTimeGetCurrent() - 40
         } else {
             let coords: Coordinates = address2Coordinates(searchAddress)
-            startTime = nil
             addPinToMapView(coords.latitude, lng: coords.longitude)
         }
     }
