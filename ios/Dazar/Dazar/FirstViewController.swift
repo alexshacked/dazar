@@ -38,7 +38,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         return res
     }
     
-    func addPinToMapView(lat: Double, lng: Double) {
+    func addPinToMapView(lat: Double, lng: Double, pseudoBuyer: Bool) {
         /* The locations */
         let locCustomer = CLLocationCoordinate2D(latitude: lat,
             longitude: lng)
@@ -52,7 +52,8 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         var annoList = [PlayerAnnotation]()
         annoList.append(custAnno)
         do {
-            let tweetsDict: NSDictionary = try doGetTweets(String(lat), longitude: String(lng))
+            let tweetsDict: NSDictionary = try doGetTweets(String(lat), longitude: String(lng),
+                pseudoBuyer: pseudoBuyer)
             let data: [NSDictionary] = tweetsDict["data"]! as! [NSDictionary]
             for one in data {
                 let latitude: Double = one["coordinates"]!["latitude"]! as! Double
@@ -246,10 +247,11 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             let last = locations.count - 1
             
             if searchAddress.isEmpty { // use device location
-                addPinToMapView(locations[last].coordinate.latitude, lng: locations[last].coordinate.longitude)
+                addPinToMapView(locations[last].coordinate.latitude, lng: locations[last].coordinate.longitude,
+                    pseudoBuyer: false)
             } else {
                 let coords: Coordinates = address2Coordinates(searchAddress)
-                addPinToMapView(coords.latitude, lng: coords.longitude)
+                addPinToMapView(coords.latitude, lng: coords.longitude, pseudoBuyer: true)
             }
     }
     
@@ -381,7 +383,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         }
     }
     
-    func doGetTweets(latitude: String, longitude: String) throws -> NSDictionary {
+    func doGetTweets(latitude: String, longitude: String, pseudoBuyer: Bool) throws -> NSDictionary {
         let id = UIDevice.currentDevice().identifierForVendor?.UUIDString
         
         let httpMethod = "POST"
@@ -394,12 +396,18 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             timeoutInterval: timeout)
         urlRequest.HTTPMethod = httpMethod
         
+        var pseudo = 0
+        if pseudoBuyer == true {
+            pseudo = 1
+        }
         let request : [NSString: AnyObject] =
         [
             "latitude": latitude,
             "longitude": longitude,
             "radius": "500",
-            "tags": searchTags
+            "tags": searchTags,
+            "buyerId": String(id),
+            "pseudoBuyer": String(pseudo)
         ]
         
         
@@ -456,7 +464,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             startTime = CFAbsoluteTimeGetCurrent() - 40
         } else {
             let coords: Coordinates = address2Coordinates(searchAddress)
-            addPinToMapView(coords.latitude, lng: coords.longitude)
+            addPinToMapView(coords.latitude, lng: coords.longitude, pseudoBuyer: true)
         }
     }
 

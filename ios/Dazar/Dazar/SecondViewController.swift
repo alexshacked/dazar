@@ -230,7 +230,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         var res: String = ""
         let arr = text.characters.split{$0 == " "}.map(String.init)
         
-        for var index = 0; index < num && arr[index] != "--"; ++index {
+        for var index = 0; index < arr.count && index < num && arr[index] != "--"; ++index {
             res += arr[index]
             res += " "
         }
