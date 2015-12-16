@@ -80,13 +80,13 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             longitude: lng)
         
         /* Create the annotation using the location */
-        let noVendorAnno = PlayerAnnotation(coordinate: locCustomer,
+        let vendorAnno = PlayerAnnotation(coordinate: locCustomer,
             title: title + " -- " + subtitle, //"current device location",
             subtitle: tweet, //"no vendor registered",
             anType: an)
         
         var annoList = [PlayerAnnotation]()
-        annoList.append(noVendorAnno)
+        annoList.append(vendorAnno)
         
         
         mapView.removeAnnotations(mapView.annotations)
