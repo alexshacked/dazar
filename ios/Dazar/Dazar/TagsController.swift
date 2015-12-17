@@ -30,7 +30,12 @@ class TagsController: UITableViewController {
                 tags.append(item.text)
             }
         }
-        delegate?.tagsController(self, didFinishSelectingTags: tags)
+        
+        if tags.isEmpty == true {
+            displayAlertWithTitle("No tags chosen", message: "Need to select at least one tag for your vendors search")
+        } else {
+            delegate?.tagsController(self, didFinishSelectingTags: tags)
+        }
     }
     
     required init(coder aDecoder: NSCoder) {
@@ -100,6 +105,18 @@ class TagsController: UITableViewController {
         } else {
             cell.accessoryType = .None
         }
+    }
+    
+    func displayAlertWithTitle(title: String, message: String){
+        let controller = UIAlertController(title: title,
+            message: message,
+            preferredStyle: .Alert)
+        let action = UIAlertAction(title: "OK",
+            style: .Default,
+            handler: nil)
+        controller.addAction(action)
+        
+        presentViewController(controller, animated: true, completion: nil)
     }
 }
 
