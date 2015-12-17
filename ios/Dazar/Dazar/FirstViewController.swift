@@ -449,6 +449,14 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     func tagsController(controller: TagsController, didFinishSelectingTags tags: [String]) {
         searchTags = tags
         dismissViewControllerAnimated(true, completion: nil)
+        
+        if searchAddress.isEmpty {
+            startTime = CFAbsoluteTimeGetCurrent() - 40
+        } else {
+            let coords: Coordinates = address2Coordinates(searchAddress)
+            addPinToMapView(coords.latitude, lng: coords.longitude, pseudoBuyer: true)
+        }
+
     }
     
     func locationControllerDidCancel(controller: LocationController) {
