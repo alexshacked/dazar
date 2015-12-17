@@ -188,7 +188,7 @@ class DazarAPI:
         body = json.loads(request.body)
 
         # extract getTweets arguments from the request
-        patronTags = body['tags']
+        vendorTags = body['tags']
         maxDistance = int(body['radius'])
         lat = float(body['latitude'])
         lng = float(body['longitude'])
@@ -206,7 +206,7 @@ class DazarAPI:
 
         timeQueryPseudoBuyers = self.getNow()
         performanceMessage += self._logGather('get buyers inside radius', timeQueryBuyers, timeQueryPseudoBuyers)
-        response = [self._responseBuyer(q) for q in queryset if not self._filterByTag(patronTags, q.buyerTags)]
+        response = [self._responseBuyer(q) for q in queryset if not self._filterBuyersByTag(vendorTags, q.buyerTags)]
 
         try:
             queryset = PseudoBuyers.objects.raw_query(query)
@@ -216,7 +216,7 @@ class DazarAPI:
 
         timeMakeResponse = self.getNow()
         performanceMessage += self._logGather('get pseudobuyers inside radius', timeQueryPseudoBuyers, timeMakeResponse)
-        response += [self._responseBuyer(q) for q in queryset if not self._filterByTag(patronTags, q.buyerTags)]
+        response += [self._responseBuyer(q) for q in queryset if not self._filterBuyersByTag(vendorTags, q.buyerTags)]
 
         flat = json.dumps(self._makeReturn('OK', 'getBuyers', response))
 
@@ -266,7 +266,7 @@ class DazarAPI:
         timeMakeResponse = self.getNow()
         performanceMessage += self._logGather('get tweets inside radius', timeQueryTweets, timeMakeResponse)
 
-        response = [self._responseTweet(q) for q in queryset if not self._filterByTag(patronTags, q.vendorTags)]
+        response = [self._responseTweet(q) for q in queryset if not self._filterVendorsByTag(patronTags, q.vendorTags)]
         flat = json.dumps(self._makeReturn('OK', 'getTweets', response))
 
         timeUpdateBuyer = self.getNow()
@@ -784,7 +784,7 @@ class DazarAPI:
         fullMsg = '\n' + msg + ': ' + performance
         return fullMsg
 
-    def _filterByTag(self, patronTags, vendorTags):
+    def _filterVendorsByTag(self, patronTags, vendorTags):
         if 'all' in patronTags:
             return False # do not filter
         for vndTag in vendorTags:
@@ -792,6 +792,14 @@ class DazarAPI:
                     return False
                 if vndTag in patronTags:
                     return False # one vendor tag corresponds to a tag that interests the patron - that's enough
+        return True # filter
+
+    def _filterBuyersByTag(self, vendorTags, buyerTags):
+        if len(buyerTags) > 4 or "all" in buyerTags: # will not show vendor buyers which are not focus in his line of products
+            return True
+        for buyTag in buyerTags:
+            if buyTag in vendorTags:
+                return False # one vendor that interests the buyer corresponds to the vendor's tags - that's enough
         return True # filter
 
     def _responseTweet(self, oneFromMongo):
