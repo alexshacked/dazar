@@ -59,6 +59,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         allVendors = persist.loadAllVendors()
         vendorId = persist.loadVendorId()
         validateVendors()
+        doRemovePseudobuyer()
     }
     
     /* We have a pin on the map; now zoom into it and make that pin
@@ -122,6 +123,17 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         mapView.addAnnotations(annoList)
         /* And now center the map around the point */
         setCenterOfMapToLocation(locCustomer)
+    }
+    
+    func doRemovePseudobuyer() {
+        let command = "removePseudobuyer"
+        let request : [NSString: AnyObject] =
+        ["buyerId": String(UIDevice.currentDevice().identifierForVendor?.UUIDString)]
+        
+        do {
+            try utils.rest(command, request: request)
+        } catch {
+        }
     }
     
     func doRegisterVendor(request: [NSString: AnyObject]) -> NSDictionary? {
