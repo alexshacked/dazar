@@ -621,6 +621,38 @@ class DazarAPI:
 
         return HttpResponse(flat)
 
+    def removePseudobuyer(self, request):
+        performanceMessage = ''
+        timeEnterFunc = self.getNow()
+
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'removePseudobuyer', invalid)))
+        self._doLog('DEBUG', 'removePseudobuyer', request.body)
+        body = json.loads(request.body)
+        buyerId = body['buyerId']
+
+        timeRemovePseudobuer = self.getNow()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeRemovePseudobuer)
+
+        try:
+            tweet = PseudoBuyers.objects.filter(buyerId = buyerId).delete()
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','removePseudobuyer', 'entries for buyerId <' + buyerId + '> was not found.')))
+
+        timeMakeResponse = self.getNow()
+        performanceMessage += self._logGather('removePseudobuyer', timeRemovePseudobuer, timeMakeResponse)
+
+        response = {"buyerId": buyerId}
+        flat = json.dumps(self._makeReturn('OK', 'removePseudobuyer', response))
+
+        timeExitFunc = self.getNow()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+        return HttpResponse(flat)
+
     # DEBUG API
     def debugGetCoordinates(self, request):
         invalid = self._validateRequest(request)
