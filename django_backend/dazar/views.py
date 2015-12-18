@@ -469,6 +469,40 @@ class DazarAPI:
 
         return HttpResponse(flat)
 
+    def removeVendor(self, request):
+        self.removeVendorTweet(request)
+
+        performanceMessage = ''
+        timeEnterFunc = self.getNow()
+
+        invalid = self._validateRequest(request)
+        if invalid is not None:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL', 'removeVendor', invalid)))
+        self._doLog('DEBUG', 'removeVendor', request.body)
+        body = json.loads(request.body)
+        vendorId = body['vendorId']
+
+        timeRemoveVendor = self.getNow()
+        performanceMessage += self._logGather('parsing request', timeEnterFunc, timeRemoveVendor)
+
+        try:
+            tweet = Vendors.objects.filter(vendorId = vendorId).delete()
+        except Exception as e:
+            return HttpResponse(json.dumps(self._makeReturn('FAIL','removeVendor', 'vendor with vendorId <' + vendorId + '> was not found.')))
+
+        timeMakeResponse = self.getNow()
+        performanceMessage += self._logGather('removeVendor', timeRemoveVendor, timeMakeResponse)
+
+        response = {"vendorId": vendorId}
+        flat = json.dumps(self._makeReturn('OK', 'removeVendor', response))
+
+        timeExitFunc = self.getNow()
+        performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
+        performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
+        self._doLog(level = 'DEBUG', cmd = performanceMessage)
+
+        return HttpResponse(flat)
+
     def getVendor(self, request):
         performanceMessage = ''
         timeEnterFunc = self.getNow()
@@ -723,6 +757,8 @@ class DazarAPI:
             Locations.objects.all().delete()
             Vendors.objects.all().delete()
             Tweets.objects.all().delete()
+            Buyers.objects.all().delete()
+            PseudoBuyers.objects.all().delete()
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL', 'debugTruncate', 'Failed on access to MongoDb  ------- ' + e.message)))
         return HttpResponse(json.dumps(self._makeReturn('OK', 'debugTruncate', 'OK')))
