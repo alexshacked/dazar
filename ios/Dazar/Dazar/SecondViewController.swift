@@ -50,6 +50,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     var vendorId: String = ""
     var allVendors = [String:VendorData]()
     var persist: Persist!
+    var utils = Utils()
     
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
@@ -123,17 +124,20 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         setCenterOfMapToLocation(locCustomer)
     }
     
+    func doRegisterVendor(request: [NSString: AnyObject]) -> NSDictionary? {
+        let command = "registerVendor"
+        
+        var jsonResult: NSDictionary?
+        do {
+            jsonResult = try utils.rest(command, request: request)
+        } catch {
+            return nil
+        }
+        return jsonResult
+    }
+    
     func doGetBuyers(latitude: String, longitude: String, tags: [String]) throws -> NSDictionary {
-        let httpMethod = "POST"
-        let timeout = 15.0
-        let urlAsString = "http://dazar.io/getBuyers"
-        let url = NSURL(string: urlAsString)
-        
-        let urlRequest = NSMutableURLRequest(URL: url!,
-            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
-            timeoutInterval: timeout)
-        urlRequest.HTTPMethod = httpMethod
-        
+        let command = "getBuyers"
         let request : [NSString: AnyObject] =
         [
             "latitude": latitude,
@@ -142,20 +146,84 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             "tags": tags
         ]
         
-        let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
-            options: .PrettyPrinted)
-        let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
+        return try utils.rest(command, request: request)
+    }
+    
+    func doGetTweet(vendorId: String) -> String{
+        var tweet = "No tweet submitted yet"
         
-        urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
+        let command = "getVendorTweet"
+        let request = ["vendorId": vendorId]
         
-        let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
-        let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
-        print("doGetBuyers")
-        print(response)
-        let jsonResult: NSDictionary = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
-        print("Synchronous\(jsonResult)")
+        do {
+            let jsonResult = try utils.rest(command, request: request)
+            let tweetSaved = jsonResult["status"] as! String
+            if  tweetSaved != "FAIL" {
+                tweet = jsonResult["data"]!["tweet"] as! String
+            }
+        } catch {
+            return tweet
+        }
         
-        return jsonResult
+        return tweet
+    }
+    
+    func doRemoveTweet(vendorId: String) -> Bool{
+        var success = false
+        let command = "removeVendorTweet"
+        let request = ["vendorId": vendorId]
+        
+        do {
+            let jsonResult = try utils.rest(command, request: request)
+            let tweetSaved = jsonResult["status"] as! String
+            if  tweetSaved != "FAIL" {
+                success = true
+            }
+        } catch {
+            success = false
+        }
+        
+        return success
+    }
+    
+    func doSendTweet(message: String) -> Bool{
+        var success = false
+        
+        let command = "addTweet"
+        let request = ["vendorId": vendorId,
+            "tweet": message]
+        
+        do {
+            let jsonResult = try utils.rest(command, request: request)
+            let tweetSaved = jsonResult["status"] as! String
+            if  tweetSaved != "FAIL" {
+                success = true
+            }
+        } catch {
+            return success
+        }
+        
+        return success
+    }
+    
+    func existVendor(id: String) -> Bool {
+        var exist = false
+        
+        let command = "getVendor"
+        let request = ["vendorId": id]
+        
+        var jsonResult: NSDictionary?
+        do {
+            jsonResult = try utils.rest(command, request: request)
+            let vendorExist = jsonResult!["status"] as! String
+            if  vendorExist != "FAIL" {
+                exist = true
+            }
+        } catch {
+            return exist
+        }
+        
+        return exist
     }
     
     func mapView(mapView: MKMapView,
@@ -427,36 +495,6 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         dismissViewControllerAnimated(true, completion: nil)
     }
     
-    func doRegisterVendor(request: [NSString: AnyObject]) -> NSDictionary? {
-        let httpMethod = "POST"
-        let timeout = 15.0
-        let urlAsString = "http://dazar.io/registerVendor"
-        let url = NSURL(string: urlAsString)
-        
-        let urlRequest = NSMutableURLRequest(URL: url!,
-            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
-            timeoutInterval: timeout)
-        urlRequest.HTTPMethod = httpMethod
-        
-        var jsonResult: NSDictionary?
-        do {
-            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
-                options: .PrettyPrinted)
-            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
-        
-            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
-        
-            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
-            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
-            print(response)
-            jsonResult = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
-            print("registerVendor response:  \(jsonResult)")
-        } catch {
-               return nil
-        }
-        return jsonResult
-    }
-    
     func newVendorControllerDidOk(controller: NewVendorController,
         newVendorRequest request: [NSString: AnyObject]) {
             dismissViewControllerAnimated(true, completion: nil)
@@ -536,43 +574,6 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         controller.setItems(items)
     }
     
-    func existVendor(id: String) -> Bool {
-        var exist = false
-        
-        let httpMethod = "POST"
-        let timeout = 15.0
-        let urlAsString = "http://dazar.io/getVendor"
-        let url = NSURL(string: urlAsString)
-        
-        let urlRequest = NSMutableURLRequest(URL: url!,
-            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
-            timeoutInterval: timeout)
-        urlRequest.HTTPMethod = httpMethod
-        
-        let request = ["vendorId": id]
-        
-        var jsonResult: NSDictionary?
-        do {
-            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
-                options: .PrettyPrinted)
-            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
-            
-            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
-            
-            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
-            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
-            jsonResult = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
-            let vendorExist = jsonResult!["status"] as! String
-            if  vendorExist != "FAIL" {
-                exist = true
-            }
-        } catch {
-            return exist
-        }
-        
-        return exist
-    }
-    
     /* test for each vendor stored on the phone that it stil exists in the server database
     */
     func validateVendors() {
@@ -608,120 +609,6 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
             an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
             tweet: tweet, tags: allVendors[self.vendorId]!.tags)
-    }
-    
-    func doSendTweet(message: String) -> Bool{
-        var success = false
-        
-        let httpMethod = "POST"
-        let timeout = 15.0
-        let urlAsString = "http://dazar.io/addTweet"
-        let url = NSURL(string: urlAsString)
-        
-        let urlRequest = NSMutableURLRequest(URL: url!,
-            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
-            timeoutInterval: timeout)
-        urlRequest.HTTPMethod = httpMethod
-        
-        let request = ["vendorId": vendorId,
-                       "tweet": message]
-        
-        var jsonResult: NSDictionary?
-        do {
-            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
-                options: .PrettyPrinted)
-            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
-            
-            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
-            
-            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
-            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
-            jsonResult = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
-            let tweetSaved = jsonResult!["status"] as! String
-            if  tweetSaved != "FAIL" {
-                success = true
-            }
-        } catch {
-            return success
-        }
-        
-        return success
-    }
-    
-    func doGetTweet(vendorId: String) -> String{
-        var tweet = "No tweet submitted yet"
-        
-        let httpMethod = "POST"
-        let timeout = 15.0
-        let urlAsString = "http://dazar.io/getVendorTweet"
-        let url = NSURL(string: urlAsString)
-        
-        let urlRequest = NSMutableURLRequest(URL: url!,
-            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
-            timeoutInterval: timeout)
-        urlRequest.HTTPMethod = httpMethod
-        
-        let request = ["vendorId": vendorId]
-        
-        var jsonResult: NSDictionary?
-        do {
-            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
-                options: .PrettyPrinted)
-            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
-            
-            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
-            
-            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
-            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
-            jsonResult = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
-            let tweetSaved = jsonResult!["status"] as! String
-            if  tweetSaved != "FAIL" {
-                tweet = jsonResult!["data"]!["tweet"] as! String
-            }
-        } catch {
-            return tweet
-        }
-        
-        return tweet
-
-    }
-    
-    func doRemoveTweet(vendorId: String) -> Bool{
-        var success = false
-        
-        let httpMethod = "POST"
-        let timeout = 15.0
-        let urlAsString = "http://dazar.io/removeVendorTweet"
-        let url = NSURL(string: urlAsString)
-        
-        let urlRequest = NSMutableURLRequest(URL: url!,
-            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
-            timeoutInterval: timeout)
-        urlRequest.HTTPMethod = httpMethod
-        
-        let request = ["vendorId": vendorId]
-        
-        var jsonResult: NSDictionary?
-        do {
-            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
-                options: .PrettyPrinted)
-            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
-            
-            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
-            
-            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
-            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
-            jsonResult = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
-            let tweetSaved = jsonResult!["status"] as! String
-            if  tweetSaved != "FAIL" {
-                success = true
-            }
-        } catch {
-            return success
-        }
-        
-        return success
-        
     }
     
     func activateButtons(isActive: Bool) {

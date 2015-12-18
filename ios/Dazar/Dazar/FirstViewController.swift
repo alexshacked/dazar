@@ -15,7 +15,9 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     var startTime: CFAbsoluteTime! = nil
     var tag = 1
     var searchTags: [String] = ["all"]
-    var searchAddress = ""
+    var searchCoordinates: Coordinates? = nil
+    var searchAddress: String = ""
+    var utils = Utils()
     
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
@@ -246,12 +248,11 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             
             let last = locations.count - 1
             
-            if searchAddress.isEmpty { // use device location
+            if searchCoordinates == nil { // use device location
                 addPinToMapView(locations[last].coordinate.latitude, lng: locations[last].coordinate.longitude,
                     pseudoBuyer: false)
             } else {
-                let coords: Coordinates = address2Coordinates(searchAddress)
-                addPinToMapView(coords.latitude, lng: coords.longitude, pseudoBuyer: true)
+                addPinToMapView(searchCoordinates!.latitude, lng: searchCoordinates!.longitude, pseudoBuyer: true)
             }
     }
     
@@ -279,16 +280,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     func address2Coordinates(address: String) -> Coordinates {
         var coord: Coordinates = Coordinates()
         
-        let httpMethod = "POST"
-        let timeout = 15.0
-        let urlAsString = "http://dazar.io/getCoordinates"
-        let url = NSURL(string: urlAsString)
-        
-        let urlRequest = NSMutableURLRequest(URL: url!,
-            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
-            timeoutInterval: timeout)
-        urlRequest.HTTPMethod = httpMethod
-        
+        let command = "getCoordinates"
         let request : [NSString: AnyObject] =
         [
             "address": address
@@ -296,17 +288,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         
         
         do {
-            let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
-                options: .PrettyPrinted)
-            let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
-        
-            urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
-        
-            let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
-            let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
-            print("address2Coordinates")
-            print(response)
-            let jsonResult: NSDictionary = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
+            let jsonResult: NSDictionary = try utils.rest(command, request: request)
             let data: NSDictionary = jsonResult["data"]! as! NSDictionary
             coord.latitude = data["lat"] as! Double
             coord.longitude = data["lng"] as! Double
@@ -385,16 +367,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     
     func doGetTweets(latitude: String, longitude: String, pseudoBuyer: Bool) throws -> NSDictionary {
         let id = UIDevice.currentDevice().identifierForVendor?.UUIDString
-        
-        let httpMethod = "POST"
-        let timeout = 15.0
-        let urlAsString = "http://dazar.io/getTweets"
-        let url = NSURL(string: urlAsString)
-        
-        let urlRequest = NSMutableURLRequest(URL: url!,
-            cachePolicy: .ReloadIgnoringLocalAndRemoteCacheData,
-            timeoutInterval: timeout)
-        urlRequest.HTTPMethod = httpMethod
+        let command = "getTweets"
         
         var pseudo = 0
         if pseudoBuyer == true {
@@ -410,18 +383,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             "pseudoBuyer": String(pseudo)
         ]
         
-        
-        let jsonData = try NSJSONSerialization.dataWithJSONObject(request,
-            options: .PrettyPrinted)
-        let body = NSString(data: jsonData, encoding: NSUTF8StringEncoding)
-        
-        urlRequest.HTTPBody = body?.dataUsingEncoding(NSUTF8StringEncoding)
-        
-        let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
-        let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
-        print("doGetTweets")
-        print(response)
-        let jsonResult: NSDictionary = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
+        let jsonResult: NSDictionary = try utils.rest(command, request: request)
         print("Synchronous\(jsonResult)")
         
         return jsonResult
@@ -450,11 +412,10 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         searchTags = tags
         dismissViewControllerAnimated(true, completion: nil)
         
-        if searchAddress.isEmpty {
+        if searchCoordinates == nil {
             startTime = CFAbsoluteTimeGetCurrent() - 40
         } else {
-            let coords: Coordinates = address2Coordinates(searchAddress)
-            addPinToMapView(coords.latitude, lng: coords.longitude, pseudoBuyer: true)
+            addPinToMapView(searchCoordinates!.latitude, lng: searchCoordinates!.longitude, pseudoBuyer: true)
         }
 
     }
@@ -465,14 +426,19 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     
     func locationController(controller: LocationController, didFinishSelectingLocation location: String) {
         print("didFinishSelectingLocation: " + location)
+        if location.isEmpty == false {
+            searchCoordinates = address2Coordinates(location)
+        } else {
+            searchCoordinates = nil
+        }
         searchAddress = location
+        
         dismissViewControllerAnimated(true, completion: nil)
         
-        if searchAddress.isEmpty {
+        if searchCoordinates == nil {
             startTime = CFAbsoluteTimeGetCurrent() - 40
         } else {
-            let coords: Coordinates = address2Coordinates(searchAddress)
-            addPinToMapView(coords.latitude, lng: coords.longitude, pseudoBuyer: true)
+            addPinToMapView(searchCoordinates!.latitude, lng: searchCoordinates!.longitude, pseudoBuyer: true)
         }
     }
 
