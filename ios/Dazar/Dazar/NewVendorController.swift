@@ -16,6 +16,7 @@ protocol NewVendorControllerDelegate: class {
 
 class NewVendorController: UITableViewController, UITextFieldDelegate {
     weak var delegate: NewVendorControllerDelegate?
+    var utils = Utils()
     
     @IBOutlet weak var country: UITextField!
     @IBOutlet weak var city: UITextField!
@@ -109,7 +110,7 @@ class NewVendorController: UITableViewController, UITextFieldDelegate {
         }
     
         if tags.isEmpty || validateTextInput() == false {
-            displayAlertWithTitle("Input data missing",
+            utils.displayAlertWithTitle(self, title: "Input data missing",
                 message: "Must provide business name, phone, full address and at least one category for the business market.")
         }
         else {
@@ -150,17 +151,4 @@ class NewVendorController: UITableViewController, UITextFieldDelegate {
         super.viewDidLoad()
         
     }
-    
-    func displayAlertWithTitle(title: String, message: String){
-        let controller = UIAlertController(title: title,
-            message: message,
-            preferredStyle: .Alert)
-        let action = UIAlertAction(title: "OK",
-            style: .Default,
-            handler: nil)
-        controller.addAction(action)
-        
-        presentViewController(controller, animated: true, completion: nil)
-    }
-
 }

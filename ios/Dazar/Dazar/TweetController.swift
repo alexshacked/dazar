@@ -17,6 +17,7 @@ protocol TweetControllerDelegate: class {
 class TweetController: UITableViewController, UITextFieldDelegate {
     weak var delegate: TweetControllerDelegate?
     @IBOutlet weak var message: UITextView!
+    var utils = Utils()
     
     @IBAction func cancel(sender: AnyObject) {
         delegate?.tweetControllerDidCancel(self)
@@ -24,23 +25,11 @@ class TweetController: UITableViewController, UITextFieldDelegate {
     
     @IBAction func done(sender: AnyObject) {
         if message.text.isEmpty == true {
-            displayAlertWithTitle("Tweet message missing",
+            utils.displayAlertWithTitle(self, title: "Tweet message missing",
                 message: "Please enter a text message or press the Cancel button.")
         } else {
             delegate?.tweetControllerDidOk(self, newTweet:  message.text)
         }
-    }
-    
-    func displayAlertWithTitle(title: String, message: String){
-        let controller = UIAlertController(title: title,
-            message: message,
-            preferredStyle: .Alert)
-        let action = UIAlertAction(title: "OK",
-            style: .Default,
-            handler: nil)
-        controller.addAction(action)
-        
-        presentViewController(controller, animated: true, completion: nil)
     }
     
     override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {

@@ -300,18 +300,6 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         return coord
     }
     
-    func displayAlertWithTitle(title: String, message: String){
-        let controller = UIAlertController(title: title,
-            message: message,
-            preferredStyle: .Alert)
-        
-        controller.addAction(UIAlertAction(title: "OK",
-            style: .Default,
-            handler: nil))
-        
-        presentViewController(controller, animated: true, completion: nil)
-    }
-
     // Factory for the CLLocationManager instance
     func createLocationManager(startImmediately: Bool){
         locationManager = CLLocationManager()
@@ -341,7 +329,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
                 createLocationManager(true)
             case .Denied:
                 /* No. */
-                displayAlertWithTitle("Not Determined",
+                utils.displayAlertWithTitle(self, title: "Not Determined",
                     message: "Location services are not allowed for this app")
             case .NotDetermined:
                 /* We don't know yet; we have to ask */
@@ -352,7 +340,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             case .Restricted:
                 /* Restrictions have been applied; we have no access
                 to location services. */
-                displayAlertWithTitle("Restricted",
+                utils.displayAlertWithTitle(self, title: "Restricted",
                     message: "Location services are not allowed for this app")
             }
             

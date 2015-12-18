@@ -425,19 +425,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         
         return isRefresh
     }
-    
-    func displayAlertWithTitle(title: String, message: String){
-        let controller = UIAlertController(title: title,
-            message: message,
-            preferredStyle: .Alert)
-        
-        controller.addAction(UIAlertAction(title: "OK",
-            style: .Default,
-            handler: nil))
-        
-        presentViewController(controller, animated: true, completion: nil)
-    }
-    
+
     // Factory for the CLLocationManager instance
     func createLocationManager(startImmediately: Bool){
         locationManager = CLLocationManager()
@@ -467,7 +455,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                 createLocationManager(true)
             case .Denied:
                 /* No. */
-                displayAlertWithTitle("Not Determined",
+                utils.displayAlertWithTitle(self, title: "Not Determined",
                     message: "Location services are not allowed for this app")
             case .NotDetermined:
                 /* We don't know yet; we have to ask */
@@ -478,7 +466,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             case .Restricted:
                 /* Restrictions have been applied; we have no access
                 to location services. */
-                displayAlertWithTitle("Restricted",
+                utils.displayAlertWithTitle(self, title: "Restricted",
                     message: "Location services are not allowed for this app")
             }
             
@@ -619,7 +607,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     
     @IBAction func onTweet(sender: AnyObject) {
         if vendorId.isEmpty {
-            displayAlertWithTitle("No vendor created yet",
+            utils.displayAlertWithTitle(self, title: "No vendor created yet",
                 message: "You need to create a vendor before you can send")
             return
         }
@@ -628,13 +616,13 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     @IBAction func onSilent(sender: AnyObject) {
         let success = doRemoveTweet(vendorId)
         if success == true {
-            displayAlertWithTitle("Command succeeded",
+            utils.displayAlertWithTitle(self, title: "Command succeeded",
                 message: "Tweet was removed")
             addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
                 an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
                 tweet: "no tweet submitted yet", tags: allVendors[self.vendorId]!.tags)
         } else {
-            displayAlertWithTitle("Command failed",
+            utils.displayAlertWithTitle(self, title: "Command failed",
                 message: "Tweet was not removed")
         }
     }

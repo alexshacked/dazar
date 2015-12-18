@@ -16,6 +16,7 @@ protocol TagsControllerDelegate: class {
 class TagsController: UITableViewController {
     var items: [TagItem]
     weak var delegate: TagsControllerDelegate?
+    var utils = Utils()
     
     @IBAction func cancel() {
         print("tags cancel")
@@ -32,7 +33,7 @@ class TagsController: UITableViewController {
         }
         
         if tags.isEmpty == true {
-            displayAlertWithTitle("No tags chosen", message: "Need to select at least one tag for your vendors search")
+            utils.displayAlertWithTitle(self, title: "No tags chosen", message: "Need to select at least one tag for your vendors search")
         } else {
             delegate?.tagsController(self, didFinishSelectingTags: tags)
         }
@@ -105,18 +106,6 @@ class TagsController: UITableViewController {
         } else {
             cell.accessoryType = .None
         }
-    }
-    
-    func displayAlertWithTitle(title: String, message: String){
-        let controller = UIAlertController(title: title,
-            message: message,
-            preferredStyle: .Alert)
-        let action = UIAlertAction(title: "OK",
-            style: .Default,
-            handler: nil)
-        controller.addAction(action)
-        
-        presentViewController(controller, animated: true, completion: nil)
     }
 }
 

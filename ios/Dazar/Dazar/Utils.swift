@@ -35,4 +35,16 @@ class Utils {
         
         return jsonResult
     }
+    
+    func displayAlertWithTitle(father: UIViewController, title: String, message: String){
+        let controller = UIAlertController(title: title,
+            message: message,
+            preferredStyle: .Alert)
+        
+        controller.addAction(UIAlertAction(title: "OK",
+            style: .Default,
+            handler: nil))
+        
+        father.presentViewController(controller, animated: true, completion: nil)
+    }
 }
