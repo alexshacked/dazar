@@ -486,7 +486,7 @@ class DazarAPI:
         performanceMessage += self._logGather('parsing request', timeEnterFunc, timeRemoveVendor)
 
         try:
-            tweet = Vendors.objects.filter(vendorId = vendorId).delete()
+            Vendors.objects.filter(id = vendorId).delete()
         except Exception as e:
             return HttpResponse(json.dumps(self._makeReturn('FAIL','removeVendor', 'vendor with vendorId <' + vendorId + '> was not found.')))
 
