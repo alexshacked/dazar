@@ -5,6 +5,7 @@ import MapKit
 class VendorData: NSObject, NSCoding {
     var name: String
     var address: String
+    var tweet: String
     var latitude: Double
     var longitude: Double
     var tags: [String]
@@ -12,15 +13,17 @@ class VendorData: NSObject, NSCoding {
     required init?(coder aDecoder: NSCoder) {
         name = aDecoder.decodeObjectForKey("name") as! String
         address = aDecoder.decodeObjectForKey("address") as! String
+        tweet = aDecoder.decodeObjectForKey("tweet") as! String
         latitude = aDecoder.decodeDoubleForKey("latitude")
         longitude = aDecoder.decodeDoubleForKey("longitude")
         tags = aDecoder.decodeObjectForKey("tags") as! [String]
         super.init()
     }
     
-    init(name: String, address: String, latitude: Double, longitude: Double, tags: [String]) {
+    init(name: String, address: String, tweet: String, latitude: Double, longitude: Double, tags: [String]) {
         self.name = name
         self.address = address
+        self.tweet = tweet
         self.latitude = latitude
         self.longitude = longitude
         self.tags = tags
@@ -29,6 +32,7 @@ class VendorData: NSObject, NSCoding {
     func encodeWithCoder(aCoder: NSCoder) {
         aCoder.encodeObject(name, forKey: "name")
         aCoder.encodeObject(address, forKey: "address")
+        aCoder.encodeObject(tweet, forKey: "tweet")
         aCoder.encodeDouble(latitude, forKey: "latitude")
         aCoder.encodeDouble(longitude, forKey: "longitude")
         aCoder.encodeObject(tags, forKey: "tags")
@@ -51,6 +55,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     var allVendors = [String:VendorData]()
     var persist: Persist!
     var utils = Utils()
+    let NO_TWEET_SUBMITTED = "No tweet submitted yet"
     
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
@@ -161,25 +166,6 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         return try utils.rest(command, request: request)
     }
     
-    func doGetTweet(vendorId: String) -> String{
-        var tweet = "No tweet submitted yet"
-        
-        let command = "getVendorTweet"
-        let request = ["vendorId": vendorId]
-        
-        do {
-            let jsonResult = try utils.rest(command, request: request)
-            let tweetSaved = jsonResult["status"] as! String
-            if  tweetSaved != "FAIL" {
-                tweet = jsonResult["data"]!["tweet"] as! String
-            }
-        } catch {
-            return tweet
-        }
-        
-        return tweet
-    }
-    
     func doRemoveTweet(vendorId: String) -> Bool{
         var success = false
         let command = "removeVendorTweet"
@@ -218,7 +204,26 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         return success
     }
     
-    func existVendor(id: String) -> Bool {
+    func doGetTweet(vendorId: String) -> String{
+        var tweet = NO_TWEET_SUBMITTED
+        
+        let command = "getVendorTweet"
+        let request = ["vendorId": vendorId]
+        
+        do {
+            let jsonResult = try utils.rest(command, request: request)
+            let tweetSaved = jsonResult["status"] as! String
+            if  tweetSaved != "FAIL" {
+                tweet = jsonResult["data"]!["tweet"] as! String
+            }
+        } catch {
+            return tweet
+        }
+        
+        return tweet
+    }
+    
+    func doExistVendor(id: String) -> Bool {
         var exist = false
         
         let command = "getVendor"
@@ -233,6 +238,19 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             }
         } catch {
             return exist
+        }
+        
+        return exist
+    }
+    
+    func existVendorAndTweet(id: String) -> Bool {
+        var exist = true
+        
+        let tweet = doGetTweet(id)
+        if tweet != NO_TWEET_SUBMITTED {
+            allVendors[id]?.tweet = tweet
+        } else {
+            exist = doExistVendor(id)
         }
         
         return exist
@@ -429,10 +447,10 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                     an: .NoVendor, title: "no vendor registered", subtitle: "current device location",
                     tweet: "", tags: [String]())
             } else {
-                let  tweet = doGetTweet(vendorId)
                 addPinToMapView(allVendors[vendorId]!.latitude, lng: allVendors[vendorId]!.longitude,
                     an: .Vendor, title: allVendors[vendorId]!.name,
-                    subtitle: allVendors[vendorId]!.address, tweet: tweet, tags: allVendors[vendorId]!.tags)
+                    subtitle: allVendors[vendorId]!.address, tweet: allVendors[vendorId]!.tweet,
+                    tags: allVendors[vendorId]!.tags)
             }
     }
     
@@ -523,14 +541,14 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                 let coordinates = newVendor!["data"]!["coordinates"]! as! [String: Double]
                 self.vendorId = vendorId as! String
                 self.allVendors[self.vendorId] = VendorData(name: request[NSString(string: "vendor")] as! String,
-                    address: request[NSString(string: "address")] as! String,
+                    address: request[NSString(string: "address")] as! String, tweet: "no tweet submitted yet",
                     latitude: coordinates["latitude"]!, longitude: coordinates["longitude"]!,
                     tags: request[NSString(string: "tags")] as! [String])
                 persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
                 
                 addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
                     an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-                    tweet: "no tweet submitted yet", tags: allVendors[self.vendorId]!.tags)
+                    tweet: allVendors[self.vendorId]!.tweet, tags: allVendors[self.vendorId]!.tags)
                 activateButtons(true)
             }
     }
@@ -567,10 +585,9 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         if allVendors.isEmpty == true {
             startTime = nil
         } else {
-            let  tweet = doGetTweet(vendorId)
             addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
                 an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-                tweet: tweet, tags: allVendors[self.vendorId]!.tags)
+                tweet: allVendors[self.vendorId]!.tweet, tags: allVendors[self.vendorId]!.tags)
         }
     }
     
@@ -621,7 +638,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     func validateVendors() {
         var changeVendorId = false
         for (id, data) in allVendors {
-            let exist =  existVendor(id)
+            let exist =  existVendorAndTweet(id)
             if exist == true {
                 continue
             }
@@ -648,9 +665,11 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         dismissViewControllerAnimated(true, completion: nil)
         doSendTweet(tweet)
         
+        allVendors[self.vendorId]!.tweet = tweet
+        persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
         addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
             an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-            tweet: tweet, tags: allVendors[self.vendorId]!.tags)
+            tweet: allVendors[self.vendorId]!.tweet, tags: allVendors[self.vendorId]!.tags)
     }
     
     func activateButtons(isActive: Bool) {
@@ -672,9 +691,11 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         if success == true {
             utils.displayAlertWithTitle(self, title: "Command succeeded",
                 message: "Tweet was removed")
+            allVendors[self.vendorId]!.tweet =  "no tweet submitted yet"
+            persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
             addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
                 an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-                tweet: "no tweet submitted yet", tags: allVendors[self.vendorId]!.tags)
+                tweet: allVendors[self.vendorId]!.tweet, tags: allVendors[self.vendorId]!.tags)
         } else {
             utils.displayAlertWithTitle(self, title: "Command failed",
                 message: "Tweet was not removed")
