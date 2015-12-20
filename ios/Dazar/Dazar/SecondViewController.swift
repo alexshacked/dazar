@@ -374,16 +374,18 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         }
         let pla: PlayerAnnotation = view.annotation as! PlayerAnnotation
         
+        
         if view.canShowCallout == false {
             print("didSelectAnnotationView - false")
             createHint(view, pla: pla)
         } else {
-            print("didSelectAnnotationView - true")
             let tag = pla.tag
+            print("didSelectAnnotationView - true tag: \(tag)")
             if let viewWithTag = view.viewWithTag(tag) {
                 viewWithTag.removeFromSuperview()
             }
         }
+
     }
     
     func mapView(mapView: MKMapView, didDeselectAnnotationView view: MKAnnotationView) {
@@ -391,16 +393,17 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             return
         }
         let pla: PlayerAnnotation = view.annotation as! PlayerAnnotation
+        
         let tag = pla.tag
         if view.canShowCallout == false {
-            print("didDeselectAnnotationView - false")
+            print("didDeselectAnnotationView - false, tag: \(tag)")
             if let viewWithTag = view.viewWithTag(tag) {
                 viewWithTag.removeFromSuperview()
             }
             
         }
         else {
-            print("didDeselectAnnotationView - true")
+            print("didDeselectAnnotationView - true, tag: \(tag)")
             if let viewWithTag = view.viewWithTag(tag) {
                 return
             }
@@ -436,6 +439,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     // SecondViewController must be a CLLocationManager delegate. This functions gets the device's GPS location
     func locationManager(manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]) {
+
             if isRefresh() == false {
                 return
             }
@@ -485,6 +489,12 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                 manager.startUpdatingLocation()
             }
         }
+    }
+    
+    func trigerUpdateLocation() {
+        startTime = nil
+        locationManager?.stopUpdatingLocation()
+        locationManager?.startUpdatingLocation()
     }
     
     // The view framework method that creates the CLLocationManager
@@ -545,11 +555,8 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                     latitude: coordinates["latitude"]!, longitude: coordinates["longitude"]!,
                     tags: request[NSString(string: "tags")] as! [String])
                 persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
-                
-                addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
-                    an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-                    tweet: allVendors[self.vendorId]!.tweet, tags: allVendors[self.vendorId]!.tags)
                 activateButtons(true)
+                trigerUpdateLocation()
             }
     }
     
@@ -582,13 +589,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         }
         persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
         
-        if allVendors.isEmpty == true {
-            startTime = nil
-        } else {
-            addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
-                an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-                tweet: allVendors[self.vendorId]!.tweet, tags: allVendors[self.vendorId]!.tags)
-        }
+        trigerUpdateLocation()
     }
     
     func myVendorControllerDidCancel(controller: MyVendorsController) {
@@ -667,9 +668,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         
         allVendors[self.vendorId]!.tweet = tweet
         persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
-        addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
-            an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-            tweet: allVendors[self.vendorId]!.tweet, tags: allVendors[self.vendorId]!.tags)
+        trigerUpdateLocation()
     }
     
     func activateButtons(isActive: Bool) {
@@ -693,9 +692,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
                 message: "Tweet was removed")
             allVendors[self.vendorId]!.tweet =  "no tweet submitted yet"
             persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
-            addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
-                an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-                tweet: allVendors[self.vendorId]!.tweet, tags: allVendors[self.vendorId]!.tags)
+            trigerUpdateLocation()
         } else {
             utils.displayAlertWithTitle(self, title: "Command failed",
                 message: "Tweet was not removed")

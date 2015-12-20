@@ -400,12 +400,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         searchTags = tags
         dismissViewControllerAnimated(true, completion: nil)
         
-        if searchCoordinates == nil {
-            startTime = CFAbsoluteTimeGetCurrent() - 40
-        } else {
-            addPinToMapView(searchCoordinates!.latitude, lng: searchCoordinates!.longitude, pseudoBuyer: true)
-        }
-
+        trigerUpdateLocation()
     }
     
     func locationControllerDidCancel(controller: LocationController) {
@@ -423,11 +418,13 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         
         dismissViewControllerAnimated(true, completion: nil)
         
-        if searchCoordinates == nil {
-            startTime = CFAbsoluteTimeGetCurrent() - 40
-        } else {
-            addPinToMapView(searchCoordinates!.latitude, lng: searchCoordinates!.longitude, pseudoBuyer: true)
-        }
+        trigerUpdateLocation()
+    }
+    
+    func trigerUpdateLocation() {
+        startTime = nil
+        locationManager?.stopUpdatingLocation()
+        locationManager?.startUpdatingLocation()
     }
 
     override func viewDidLoad() {
