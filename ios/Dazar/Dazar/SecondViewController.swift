@@ -238,6 +238,25 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         return exist
     }
     
+    func doRemoveVendor(id: String) -> Bool {
+        var success = false
+        
+        let command = "removeVendor"
+        let request = ["vendorId": id]
+        
+        do {
+            let jsonResult: NSDictionary? = try utils.rest(command, request: request)
+            let didRemove = jsonResult!["status"] as! String
+            if  didRemove != "FAIL" {
+                success = true
+            }
+        } catch {
+            return success
+        }
+        
+        return success
+    }
+    
     func mapView(mapView: MKMapView,
         viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
             
@@ -516,19 +535,42 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             }
     }
     
-    func selectAnotherVendor(name: String) {
+    func selectAnotherVendor(finalSequence: [VendorItem]) {
+        // we remove from allVendors all those who are not in finalSequence
+        // and also set the new selected vendorId
         for (id, vendor) in allVendors {
-            if vendor.name != name {
-                continue
+            var keep = false
+            for final in finalSequence {
+                if final.text == vendor.name {
+                    keep = true
+                    if final.checked == true {
+                        vendorId = id
+                    }
+                    break
+                }
             }
-            if id != vendorId {
-                vendorId = id
-                persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
-                let  tweet = doGetTweet(vendorId)
-                addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
-                    an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
-                    tweet: tweet, tags: allVendors[self.vendorId]!.tags)
+                
+            if keep == false {
+                let didRemove = doRemoveVendor(id)
+                if didRemove == true {
+                    allVendors.removeValueForKey(id)
+                }
             }
+        }
+        
+        if allVendors.isEmpty == true {
+            vendorId = ""
+            activateButtons(false)
+        }
+        persist.saveAllVendors(self.allVendors, vendorId: self.vendorId)
+        
+        if allVendors.isEmpty == true {
+            startTime = nil
+        } else {
+            let  tweet = doGetTweet(vendorId)
+            addPinToMapView(allVendors[self.vendorId]!.latitude, lng: allVendors[self.vendorId]!.longitude,
+                an: .Vendor, title: allVendors[self.vendorId]!.name, subtitle: allVendors[self.vendorId]!.address,
+                tweet: tweet, tags: allVendors[self.vendorId]!.tags)
         }
     }
     
@@ -536,9 +578,9 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         dismissViewControllerAnimated(true, completion: nil)
     }
     
-    func myVendorControllerDidOk(controller: MyVendorsController, didFinishSelectingVendor vendor: String) {
+    func myVendorControllerDidOk(controller: MyVendorsController, vendorsFinalSet vendors: [VendorItem]) {
         dismissViewControllerAnimated(true, completion: nil)
-        selectAnotherVendor(vendor)
+        selectAnotherVendor(vendors)
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {

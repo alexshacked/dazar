@@ -172,16 +172,26 @@
                                 <action selector="cancel:" destination="7ky-jD-Iil" id="zjq-Qr-tni"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="VfW-tc-3Ux">
-                            <connections>
-                                <action selector="done:" destination="7ky-jD-Iil" id="A8M-zB-AXt"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem systemItem="done" id="VfW-tc-3Ux">
+                                <connections>
+                                    <action selector="done:" destination="7ky-jD-Iil" id="A8M-zB-AXt"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem title="Delete       " style="done" id="siI-2k-E28">
+                                <connections>
+                                    <action selector="onDelete:" destination="7ky-jD-Iil" id="SnD-a2-AYJ"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
+                    <connections>
+                        <outlet property="buttonCancel" destination="wX8-nK-Iup" id="N8U-ql-af2"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sas-Pq-qqg" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2384" y="1334"/>
+            <point key="canvasLocation" x="2371" y="1362"/>
         </scene>
         <!--Tweet-->
         <scene sceneID="3b9-i7-5CU">

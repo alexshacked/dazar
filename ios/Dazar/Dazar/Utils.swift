@@ -47,4 +47,46 @@ class Utils {
         
         father.presentViewController(controller, animated: true, completion: nil)
     }
+    
+    func displayAlertYesNo(father: UIViewController, title: String, message: String, callback: (action: UIAlertAction!) -> Void) {
+
+        let controller = UIAlertController(title: title,
+            message: message,
+            preferredStyle: .Alert)
+        
+        controller.addAction(UIAlertAction(title: "OK",
+            style: .Default,
+            handler: callback ))
+        
+        controller.addAction(UIAlertAction(title: "CANCEL",
+            style: .Default,
+            handler: { (action: UIAlertAction!) in print("CANCEL")} ))
+        
+        father.presentViewController(controller, animated: true, completion: nil)
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -10,7 +10,7 @@ import UIKit
 
 protocol MyVendorsControllerDelegate: class {
     func myVendorControllerDidCancel(controller: MyVendorsController)
-    func myVendorControllerDidOk(controller: MyVendorsController, didFinishSelectingVendor vendor: String)
+    func myVendorControllerDidOk(controller: MyVendorsController, vendorsFinalSet vendors: [VendorItem])
 }
 
 class VendorItem {
@@ -31,16 +31,32 @@ class VendorItem {
 class MyVendorsController: UITableViewController {
     var items: [VendorItem] = []
     weak var delegate: MyVendorsControllerDelegate?
+    @IBOutlet weak var buttonCancel: UIBarButtonItem!
+    var utils = Utils()
     
-    @IBAction func done(sender: AnyObject) {
-        print("my vendors done")
-        var selected = ""
-        for item in items {
-            if item.checked == true {
-                selected = item.text
+    @IBAction func onDelete(sender: AnyObject) {
+        utils.displayAlertYesNo(self, title: "Deleting one vendor",
+            message: "You are about to completely delete the selected vendor. Want to proceede?", callback: deleteVendor)
+    }
+    
+    func deleteVendor(action: UIAlertAction!) {
+        print("Go on! delete")
+        for (index, value) in items.enumerate() {
+            if value.checked == true {
+                items.removeAtIndex(index)
+                if items.count > 0 {
+                    items[0].checked = true
+                }
+                break
             }
         }
-        delegate?.myVendorControllerDidOk(self, didFinishSelectingVendor: selected)
+
+        self.tableView.reloadData()
+        
+    }
+    
+    @IBAction func done(sender: AnyObject) {
+        delegate?.myVendorControllerDidOk(self, vendorsFinalSet: items)
     }
     
     @IBAction func cancel(sender: AnyObject) {
@@ -56,6 +72,7 @@ class MyVendorsController: UITableViewController {
         if items.isEmpty == true  {
             return 1
         }
+
         return items.count
     }
     
@@ -93,7 +110,7 @@ class MyVendorsController: UITableViewController {
             }
                 
             let idxPath = NSIndexPath(forRow: i, inSection: indexPath.section)
-            var cell = tableView.cellForRowAtIndexPath(idxPath)
+            let cell = tableView.cellForRowAtIndexPath(idxPath)
             items[i].toggle()
             cellCheck(cell!, item: items[i])
             tableView.deselectRowAtIndexPath(idxPath, animated: true)
