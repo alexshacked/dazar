@@ -18,6 +18,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     var searchCoordinates: Coordinates? = nil
     var searchAddress: String = ""
     var utils = Utils()
+    var neverAppeared = true
     
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
@@ -316,41 +317,52 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         
-        /* Are location services available on this device? */
-        if CLLocationManager.locationServicesEnabled() {
-            
-            /* Do we have authorization to access location services? */
-            switch CLLocationManager.authorizationStatus(){
-            case .Authorized:
-                /* Yes, always. */
-                createLocationManager(true)
-            case .AuthorizedWhenInUse:
-                /* Yes, only when our app is in use. */
-                createLocationManager(true)
-            case .Denied:
-                /* No. */
-                utils.displayAlertWithTitle(self, title: "Not Determined",
-                    message: "Location services are not allowed for this app")
-            case .NotDetermined:
-                /* We don't know yet; we have to ask */
-                createLocationManager(false)
-                if let manager = self.locationManager{
-                    manager.requestWhenInUseAuthorization()
+        if neverAppeared == true {
+            neverAppeared = false
+        
+            /* Are location services available on this device? */
+            if CLLocationManager.locationServicesEnabled() {
+                
+                /* Do we have authorization to access location services? */
+                switch CLLocationManager.authorizationStatus(){
+                case .Authorized:
+                    /* Yes, always. */
+                    createLocationManager(true)
+                case .AuthorizedWhenInUse:
+                    /* Yes, only when our app is in use. */
+                    createLocationManager(true)
+                case .Denied:
+                    /* No. */
+                    utils.displayAlertWithTitle(self, title: "Not Determined",
+                        message: "Location services are not allowed for this app")
+                case .NotDetermined:
+                    /* We don't know yet; we have to ask */
+                    createLocationManager(false)
+                    if let manager = self.locationManager{
+                        manager.requestWhenInUseAuthorization()
+                    }
+                case .Restricted:
+                    /* Restrictions have been applied; we have no access
+                    to location services. */
+                    utils.displayAlertWithTitle(self, title: "Restricted",
+                        message: "Location services are not allowed for this app")
                 }
-            case .Restricted:
-                /* Restrictions have been applied; we have no access
-                to location services. */
-                utils.displayAlertWithTitle(self, title: "Restricted",
-                    message: "Location services are not allowed for this app")
+                
+                
+            } else {
+                /* Location services are not enabled.
+                Take appropriate action: for instance, prompt the
+                user to enable the location services. */
+                print("Location services are not enabled")
             }
-            
-            
-        } else {
-            /* Location services are not enabled.
-            Take appropriate action: for instance, prompt the
-            user to enable the location services. */
-            print("Location services are not enabled")
+        } else { // neverAppeared == false
+            startUpdateLocation()
         }
+    }
+    
+    override func viewDidDisappear(animated: Bool) {
+        super.viewDidDisappear(animated)
+        stopUpdateLocation()
     }
     
     func doGetTweets(latitude: String, longitude: String, pseudoBuyer: Bool) throws -> NSDictionary {
@@ -372,7 +384,6 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         ]
         
         let jsonResult: NSDictionary = try utils.rest(command, request: request)
-        print("Synchronous\(jsonResult)")
         
         return jsonResult
     }
@@ -426,6 +437,15 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         locationManager?.stopUpdatingLocation()
         locationManager?.startUpdatingLocation()
     }
+    
+    func stopUpdateLocation() {
+        locationManager?.stopUpdatingLocation()
+    }
+    
+    func startUpdateLocation() {
+        locationManager?.startUpdatingLocation()
+    }
+
 
     override func viewDidLoad() {
         super.viewDidLoad()

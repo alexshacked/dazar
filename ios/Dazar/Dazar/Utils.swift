@@ -29,7 +29,6 @@ class Utils {
         let response: AutoreleasingUnsafeMutablePointer<NSURLResponse?>=nil
         let dataVal: NSData =  try NSURLConnection.sendSynchronousRequest(urlRequest, returningResponse: response)
         print(command)
-        print(response)
         let jsonResult: NSDictionary = (try NSJSONSerialization.JSONObjectWithData(dataVal, options: NSJSONReadingOptions.MutableContainers) as? NSDictionary)!
         print("Synchronous\(jsonResult)")
         
