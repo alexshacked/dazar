@@ -66,9 +66,11 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
                 
                 let name: String = one["name"]! as! String
                 let tweet: String = one["tweet"]! as! String
+                let tagsList: [String] = one["tags"]! as! [String]
+                let tags = tagsList.joinWithSeparator(",")
                 
                 let vendAnno = PlayerAnnotation(coordinate: locVendor,
-                    title: name,
+                    title: name + " -- " + tags,
                     subtitle: tweet,
                     anType: .Vendor)
                 annoList.append(vendAnno)

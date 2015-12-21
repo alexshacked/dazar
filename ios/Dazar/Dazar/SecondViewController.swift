@@ -95,7 +95,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         /* Create the annotation using the location */
         let vendorAnno = PlayerAnnotation(coordinate: locCustomer,
             title: title + " -- " + subtitle, //"current device location",
-            subtitle: tweet, //"no vendor registered",
+            subtitle: tags!.joinWithSeparator(",") + " -- tweet: " + tweet,
             anType: an)
         
         var annoList = [PlayerAnnotation]()
