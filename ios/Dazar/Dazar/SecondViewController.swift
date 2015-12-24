@@ -47,7 +47,6 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     @IBOutlet weak var buttonVendors: UIBarButtonItem!
     var locationManager: CLLocationManager?
     var mapView: MKMapView!
-    var startTime: CFAbsoluteTime! = nil
     var tag = 1
     var searchTags: [String] = ["all"]
     
@@ -57,6 +56,8 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     var utils = Utils()
     let NO_TWEET_SUBMITTED = "No tweet submitted yet"
     var neverAppeared = true
+    var timer = NSTimer()
+    var goIn = true
     
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
@@ -133,13 +134,20 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     
     func doRemovePseudobuyer() {
         let command = "removePseudobuyer"
-        let request : [NSString: AnyObject] =
+        var request : [NSString: AnyObject] =
         ["buyerId": String(UIDevice.currentDevice().identifierForVendor?.UUIDString)]
         
         do {
             try utils.rest(command, request: request)
         } catch {
         }
+        
+        request = ["buyerId": "4702e5581a5ba3a6"] // clean also sorin's device
+        do {
+            try utils.rest(command, request: request)
+        } catch {
+        }
+
     }
     
     func doRegisterVendor(request: [NSString: AnyObject]) -> NSDictionary? {
@@ -441,9 +449,10 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     func locationManager(manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]) {
 
-            if isRefresh() == false {
+            if goIn == false {
                 return
             }
+            goIn = false
             
             let last = locations.count - 1
             
@@ -459,27 +468,6 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
             }
     }
     
-    // is it time for refresh
-    func isRefresh() -> Bool {
-        var isRefresh = true
-        
-        if startTime == nil {
-            startTime = CFAbsoluteTimeGetCurrent()
-        } else {
-            let now = CFAbsoluteTimeGetCurrent()
-            let delta = Int(now - startTime)
-            if delta < 35 {
-                //print("Too early for refresh \(delta)")
-                isRefresh = false
-            } else {
-                startTime = now
-                print("REFRESH")
-            }
-        }
-        
-        return isRefresh
-    }
-
     // Factory for the CLLocationManager instance
     func createLocationManager(startImmediately: Bool){
         locationManager = CLLocationManager()
@@ -493,7 +481,7 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
     }
     
     func trigerUpdateLocation() {
-        startTime = nil
+        goIn = true
         locationManager?.stopUpdatingLocation()
         locationManager?.startUpdatingLocation()
     }
@@ -719,6 +707,11 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         }
     }
     
+    func timerAction() {
+        trigerUpdateLocation()
+    }
+
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         mapView.mapType = .Standard
@@ -729,6 +722,9 @@ class SecondViewController: UIViewController, CLLocationManagerDelegate, MKMapVi
         if vendorId.isEmpty == true {
             activateButtons(false)
         }
+        
+        timer = NSTimer.scheduledTimerWithTimeInterval(
+            25.0, target: self, selector: "timerAction", userInfo: nil, repeats: true)
     }
     
     override func didReceiveMemoryWarning() {

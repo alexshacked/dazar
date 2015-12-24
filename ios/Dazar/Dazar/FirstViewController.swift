@@ -12,13 +12,14 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     // holds the CLLocationManager instance created in viewDidAppear()
     var locationManager: CLLocationManager?
     var mapView: MKMapView!
-    var startTime: CFAbsoluteTime! = nil
     var tag = 1
     var searchTags: [String] = ["all"]
     var searchCoordinates: Coordinates? = nil
     var searchAddress: String = ""
     var utils = Utils()
     var neverAppeared = true
+    var timer = NSTimer()
+    var goIn = true
     
     required init(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)!
@@ -245,9 +246,10 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     // FirstViewController must be a CLLocationManager delegate. This functions gets the device's GPS location
     func locationManager(manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]) {
-            if isRefresh() == false {
+            if goIn == false {
                 return
             }
+            goIn = false
             
             let last = locations.count - 1
             
@@ -257,27 +259,6 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
             } else {
                 addPinToMapView(searchCoordinates!.latitude, lng: searchCoordinates!.longitude, pseudoBuyer: true)
             }
-    }
-    
-    // is it time for refresh
-    func isRefresh() -> Bool {
-        var isRefresh = true
-        
-        if startTime == nil {
-            startTime = CFAbsoluteTimeGetCurrent()
-        } else {
-            let now = CFAbsoluteTimeGetCurrent()
-            let delta = Int(now - startTime)
-            if delta < 35 {
-                //print("Too early for refresh \(delta)")
-                isRefresh = false
-            } else {
-                startTime = now
-                print("REFRESH")
-            }
-        }
-
-        return isRefresh
     }
     
     func address2Coordinates(address: String) -> Coordinates {
@@ -435,7 +416,7 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     }
     
     func trigerUpdateLocation() {
-        startTime = nil
+        goIn = true
         locationManager?.stopUpdatingLocation()
         locationManager?.startUpdatingLocation()
     }
@@ -447,6 +428,10 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
     func startUpdateLocation() {
         locationManager?.startUpdatingLocation()
     }
+    
+    func timerAction() {
+        trigerUpdateLocation()
+    }
 
 
     override func viewDidLoad() {
@@ -455,6 +440,8 @@ class FirstViewController: UIViewController, CLLocationManagerDelegate, MKMapVie
         mapView.frame = view.frame
         mapView.delegate = self
         view.addSubview(mapView)
+        timer = NSTimer.scheduledTimerWithTimeInterval(
+            25.0, target: self, selector: "timerAction", userInfo: nil, repeats: true)
     }
 
     override func didReceiveMemoryWarning() {
