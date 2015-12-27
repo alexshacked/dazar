@@ -96,19 +96,19 @@
                                     <segue destination="cE4-Si-hft" kind="presentation" identifier="tweet" id="voc-tZ-EpD"/>
                                 </connections>
                             </barButtonItem>
-                            <barButtonItem title="    Silent" style="done" id="es8-Dm-ZPa">
+                            <barButtonItem title="Silent" style="done" id="es8-Dm-ZPa">
                                 <connections>
                                     <action selector="onSilent:" destination="8rJ-Kc-sve" id="h4D-p3-cfV"/>
                                 </connections>
                             </barButtonItem>
                         </leftBarButtonItems>
                         <rightBarButtonItems>
-                            <barButtonItem title="New Vendor" style="done" id="xqP-cr-I6r">
+                            <barButtonItem title="NewVendor" style="done" id="xqP-cr-I6r">
                                 <connections>
                                     <segue destination="wbk-eE-43I" kind="presentation" identifier="newVendor" id="1hc-nc-a8C"/>
                                 </connections>
                             </barButtonItem>
-                            <barButtonItem title="My Vendors    " style="done" id="VaM-yT-V5Q">
+                            <barButtonItem title="Vendors" style="done" id="VaM-yT-V5Q">
                                 <connections>
                                     <segue destination="73B-u2-eGb" kind="presentation" identifier="MyVendors" id="w13-If-xZR"/>
                                 </connections>
