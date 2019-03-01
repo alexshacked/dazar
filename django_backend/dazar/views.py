@@ -219,6 +219,7 @@ class DazarAPI:
         response += [self._responseBuyer(q) for q in queryset if not self._filterBuyersByTag(vendorTags, q.buyerTags)]
 
         flat = json.dumps(self._makeReturn('OK', 'getBuyers', response))
+        self._doLog(level = 'DEBUG', cmd = flat)
 
         timeExitFunc = self.getNow()
         performanceMessage += self._logGather('make response', timeMakeResponse, timeExitFunc)
@@ -277,7 +278,7 @@ class DazarAPI:
         performanceMessage += self._logGather('total', timeEnterFunc, timeExitFunc)
         self._doLog(level = 'DEBUG', cmd = performanceMessage)
 
-        if buyerId and pseudoBuyer:
+        if buyerId or pseudoBuyer:
             self.updateBuyer(buyerId, pseudoBuyer, body['latitude'], body['longitude'], patronTags)
             '''
             # instead of calling updateBuyer() directly we do it on a separate thread - trying to increase backend responsivity
@@ -291,7 +292,7 @@ class DazarAPI:
         msg = 'updateBuyer - buyerId: %s, pseudoBuyer: %s, latitude: %s, longitude: %s, tags: %s' % (buyerId, pseudoBuyer, latitude, longitude, ",".join(tags))
         # print(msg)
 
-        isPseudo = bool(int(pseudoBuyer))
+        isPseudo = pseudoBuyer is not None and bool(int(pseudoBuyer))
         if not isPseudo:
             self.doUpdateBuyer(buyerId, latitude, longitude, tags)
         else:
